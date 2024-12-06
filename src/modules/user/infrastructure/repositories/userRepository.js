@@ -1,4 +1,4 @@
-export class InMemoryUserRepository {
+export default class InMemoryUserRepository {
   constructor() {
     this.users = [];
     this.currentId = 1; // To simulate auto-incrementing IDs
