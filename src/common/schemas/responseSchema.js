@@ -3,7 +3,7 @@ export const okSchema = {
   type: "object",
   properties: {
     message: { type: "string" },
-    status: { stype: "integer" },
+    status: { type: "integer" },
     data: { type: "object" },
   },
 };

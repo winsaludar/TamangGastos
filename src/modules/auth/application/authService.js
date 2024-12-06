@@ -1,4 +1,4 @@
-import Auth from "../domain/authEntity.js";
+import Auth from "../domain/auth.js";
 import HttpError from "../../../common/errors/httpError.js";
 
 export default class AuthService {
@@ -27,7 +27,17 @@ export default class AuthService {
     const token = this.jwtUtils.generateToken({
       id: user.id,
       email: user.email,
+
+      // Add additional custom claims here...
     });
     return { user: { id: user.id, name: user.name, email: user.email }, token };
+  }
+
+  async forgotPassword(email) {
+    // TODO
+  }
+
+  async verifyEmail(email, otp) {
+    // TODO
   }
 }
