@@ -1,15 +1,44 @@
 import { okSchema } from "../../../../common/schemas/responseSchema.js";
-import { userSchema } from "../../../../common/schemas/userSchema.js";
 
 export const registerRequestSchema = {
   type: "object",
   properties: {
-    name: { type: "string" },
-    email: { type: "string", format: "email" },
-    password: { type: "string", minLength: 6 },
-    retypePassword: { type: "string" },
+    name: {
+      type: "string",
+      minLength: 1,
+      errorMessage: { minLength: "Name cannot be empty" },
+    },
+    email: {
+      type: "string",
+      format: "email",
+      minLength: 1,
+      errorMessage: {
+        format: "Invalid email format",
+        minLength: "Email cannot be empty",
+      },
+    },
+    password: {
+      type: "string",
+      minLength: 6,
+      errorMessage: {
+        minLength: "Password must be at least 6 characters long",
+      },
+    },
+    retypePassword: {
+      type: "string",
+      minLength: 1,
+      errorMessage: { minLength: "Re-type Password cannot be empty" },
+    },
   },
   required: ["name", "email", "password", "retypePassword"],
+  errorMessage: {
+    required: {
+      name: "Name property is required",
+      email: "Email property is required",
+      password: "Password property is required",
+      retypePassword: "Re-type Password property is required",
+    },
+  },
   additionalProperties: false,
 
   // Custom validation for password comparison
@@ -24,19 +53,6 @@ export const registerRequestSchema = {
       },
     },
   },
-
-  // Custom error messages
-  errorMessage: {
-    required: {
-      name: "Name cannot be empty",
-      email: "Email cannot be empty",
-      password: "Password cannot be empty",
-      retypePassword: "Re-type password cannot be empty",
-    },
-    properties: {
-      password: "Password should be at least 6 characters long",
-    },
-  },
 };
 
 export const registerResponseSchema = {
@@ -44,12 +60,7 @@ export const registerResponseSchema = {
   properties: {
     ...okSchema.properties,
     data: {
-      user: { ref: "#/components/schemas/user" },
-    },
-  },
-  components: {
-    schemas: {
-      user: userSchema,
+      user: { ref: "#userSchema" },
     },
   },
 };

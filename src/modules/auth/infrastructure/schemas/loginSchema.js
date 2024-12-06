@@ -1,13 +1,30 @@
 import { okSchema } from "../../../../common/schemas/responseSchema.js";
-import { userSchema } from "../../../../common/schemas/userSchema.js";
 
 export const loginRequestSchema = {
   type: "object",
   properties: {
-    email: { type: "string", format: "email" },
-    password: { type: "string" },
+    email: {
+      type: "string",
+      format: "email",
+      minLength: 1,
+      errorMessage: {
+        format: "Invalid email format",
+        minLength: "Email cannot be empty",
+      },
+    },
+    password: {
+      type: "string",
+      minLength: 1,
+      errorMessage: { minLength: "Password cannot be empty" },
+    },
   },
   required: ["email", "password"],
+  errorMessage: {
+    required: {
+      email: "Email property is required",
+      password: "Password property is required",
+    },
+  },
   additionalProperties: false,
 
   // Custom error messages
@@ -28,13 +45,8 @@ export const loginResponseSchema = {
   properties: {
     ...okSchema.properties,
     data: {
-      user: { ref: "#/components/schemas/user" },
+      user: { ref: "#userSchema" },
       token: { type: "string" },
-    },
-  },
-  components: {
-    schemas: {
-      user: userSchema,
     },
   },
 };
