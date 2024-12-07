@@ -8,10 +8,15 @@ To run this project, you will need to add the following environment variables to
 Make sure to create the file under the `api` folder (same directory where your `package.json` is located).
 
 `DB_USER`
+
 `DB_PASS`
+
 `DB_HOST`
+
 `DB_PORT`
+
 `DB_DATABASE_NAME`
+
 `JWT_SECRET`
 
 ## Run Locally
