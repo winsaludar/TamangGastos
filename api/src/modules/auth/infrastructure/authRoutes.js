@@ -11,13 +11,6 @@ import {
   registerResponseSchema,
 } from "./schemas/registerSchema.js";
 
-import AuthService from "../application/authService.js";
-import JwtUtils from "../../../common/utils/jwtUtils.js";
-import TokenRepository from "../../token/infrastructure/tokenRepository.js";
-import UserRepository from "../../user/infrastructure/repositories/userRepository.js";
-
-// import InMemoryUserRepository from "../../user/infrastructure/repositories/inMemoryUserRepository.js";
-
 const registerMetadata = {
   schema: {
     description: "Register user",
@@ -43,15 +36,8 @@ const loginMetadata = {
 };
 
 export default async function authRoutes(fastify, options) {
-  const jwtUtils = new JwtUtils(fastify.jwt);
-  const authService = new AuthService(
-    new UserRepository(),
-    new TokenRepository(),
-    jwtUtils
-  );
-
   fastify.post("/register", registerMetadata, async (request, reply) => {
-    const user = await authService.registerUser(request.body);
+    const user = await fastify.authService.registerUser(request.body);
     reply.send({
       message: "Register successful",
       status: 200,
@@ -61,7 +47,10 @@ export default async function authRoutes(fastify, options) {
 
   fastify.post("/login", loginMetadata, async (request, reply) => {
     const { email, password } = request.body;
-    const { user, token } = await authService.loginUser(email, password);
+    const { user, token } = await fastify.authService.loginUser(
+      email,
+      password
+    );
     reply.send({
       message: "Login successful",
       status: 200,

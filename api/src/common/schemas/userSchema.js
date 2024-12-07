@@ -3,9 +3,9 @@ export const userSchema = {
   type: "object",
   properties: {
     id: { type: "integer" },
-    name: { type: "string" },
+    username: { type: "string" },
     email: { type: "string", format: "email" },
   },
-  required: ["id", "name", "email"],
+  required: ["id", "username", "email"],
   additionalProperties: false,
 };

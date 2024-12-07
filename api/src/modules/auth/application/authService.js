@@ -33,14 +33,14 @@ export default class AuthService {
 
     const result = await this.userRepository.save(user);
 
-    return { id: result.id, name: result.name, email: result.email };
+    return { id: result.id, username: user.username, email: user.email };
   }
 
   async loginUser(email, password) {
     const errorMessage = "Invalid email or password";
 
     const user = await this.userRepository.findByUsernameOrEmail(null, email);
-    if (!user) throw new HttpError(errorMessage, 401);
+    if (user === null) throw new HttpError(errorMessage, 401);
 
     const isValidPassword = await Auth.verifyPassword(
       password,
@@ -72,7 +72,10 @@ export default class AuthService {
       await this.tokenRepository.save(newToken);
     }
 
-    return { user: { id: user.id, name: user.name, email: user.email }, token };
+    return {
+      user: { id: user.id, username: user.username, email: user.email },
+      token,
+    };
   }
 
   async forgotPassword(email) {

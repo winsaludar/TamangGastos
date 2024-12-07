@@ -1,5 +1,5 @@
-import User from "../../domain/user.js";
-import { knexInstance } from "../../../../common/config/databaseConfig.js";
+import User from "../domain/user.js";
+import { knexInstance } from "../../../common/config/databaseConfig.js";
 
 export default class UserRepository {
   constructor() {
