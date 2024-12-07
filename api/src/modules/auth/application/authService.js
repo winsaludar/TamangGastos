@@ -8,11 +8,15 @@ export default class AuthService {
   }
 
   async registerUser(userData) {
+    if (!userData) {
+      throw new HttpError("User data cannot be empty", 400);
+    }
+
     const hashedPassword = await Auth.hashPassword(userData.password);
     const newUser = { ...userData, password: hashedPassword };
-    this.userRepository.save(newUser);
+    const result = await this.userRepository.save(newUser);
 
-    return { id: newUser.id, name: newUser.name, email: newUser.email };
+    return { id: result.id, name: result.name, email: result.email };
   }
 
   async loginUser(email, password) {
@@ -24,7 +28,7 @@ export default class AuthService {
     const isValidPassword = await Auth.verifyPassword(password, user.password);
     if (!isValidPassword) throw new HttpError(errorMessage, 401);
 
-    const token = this.jwtUtils.generateToken({
+    const token = await this.jwtUtils.generateToken({
       id: user.id,
       email: user.email,
 
