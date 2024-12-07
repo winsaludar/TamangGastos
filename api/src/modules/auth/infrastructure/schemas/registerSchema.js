@@ -3,10 +3,10 @@ import { okSchema } from "../../../../common/schemas/responseSchema.js";
 export const registerRequestSchema = {
   type: "object",
   properties: {
-    name: {
+    username: {
       type: "string",
       minLength: 1,
-      errorMessage: { minLength: "Name cannot be empty" },
+      errorMessage: { minLength: "Username cannot be empty" },
     },
     email: {
       type: "string",
@@ -30,7 +30,7 @@ export const registerRequestSchema = {
       errorMessage: { minLength: "Re-type Password cannot be empty" },
     },
   },
-  required: ["name", "email", "password", "retypePassword"],
+  required: ["username", "email", "password", "retypePassword"],
   errorMessage: {
     required: {
       name: "Name property is required",

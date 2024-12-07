@@ -12,8 +12,11 @@ import {
 } from "./schemas/registerSchema.js";
 
 import AuthService from "../application/authService.js";
-import InMemoryUserRepository from "../../user/infrastructure/repositories/userRepository.js";
 import JwtUtils from "../../../common/utils/jwtUtils.js";
+import TokenRepository from "../../token/infrastructure/tokenRepository.js";
+import UserRepository from "../../user/infrastructure/repositories/userRepository.js";
+
+// import InMemoryUserRepository from "../../user/infrastructure/repositories/inMemoryUserRepository.js";
 
 const registerMetadata = {
   schema: {
@@ -41,7 +44,11 @@ const loginMetadata = {
 
 export default async function authRoutes(fastify, options) {
   const jwtUtils = new JwtUtils(fastify.jwt);
-  const authService = new AuthService(new InMemoryUserRepository(), jwtUtils);
+  const authService = new AuthService(
+    new UserRepository(),
+    new TokenRepository(),
+    jwtUtils
+  );
 
   fastify.post("/register", registerMetadata, async (request, reply) => {
     const user = await authService.registerUser(request.body);
