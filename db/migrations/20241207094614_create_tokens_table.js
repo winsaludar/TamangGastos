@@ -5,7 +5,7 @@
 export function up(knex) {
   return knex.schema.createTable("tokens", (table) => {
     table.bigIncrements("id").primary();
-    table.bigInteger("user_id").notNullable();
+    table.uuid("user_id").notNullable();
     table.text("token").notNullable();
     table.string("token_type", 20).notNullable();
     table.timestamp("expires_at").notNullable();

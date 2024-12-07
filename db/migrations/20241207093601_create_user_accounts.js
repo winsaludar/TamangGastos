@@ -4,7 +4,7 @@
  */
 export function up(knex) {
   return knex.schema.createTable("user_accounts", (table) => {
-    table.bigIncrements("id").primary(); // Auto-incremented ID
+    table.uuid("id").primary().defaultTo(knex.raw("gen_random_uuid()"));
     table.string("username", 50).notNullable().unique();
     table.string("email", 255).notNullable().unique();
     table.text("password_hash").notNullable();
