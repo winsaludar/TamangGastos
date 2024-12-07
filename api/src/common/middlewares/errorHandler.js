@@ -1,7 +1,5 @@
 export default function errorHandler(error, request, reply) {
   if (error.validation) {
-    console.log(error.validation);
-
     reply.status(error.statusCode).send({
       message: "Invalid input",
       details: error.validation
