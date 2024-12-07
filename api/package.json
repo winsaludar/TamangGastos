@@ -1,0 +1,35 @@
+{
+  "name": "tamang-gastos",
+  "version": "1.0.0",
+  "description": "Web application designed to help users manage their finances by tracking income and expenses, categorizing transactions, and providing insightful analytics to improve financial planning.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "dev": "nodemon ./src/server.js",
+    "test": "npx mocha --require @babel/register ./tests/**/*"
+  },
+  "private": true,
+  "author": "Erwin Saludar",
+  "license": "MIT",
+  "dependencies": {
+    "@fastify/jwt": "^9.0.1",
+    "@fastify/swagger": "^9.4.0",
+    "@fastify/swagger-ui": "^5.2.0",
+    "ajv-errors": "^3.0.0",
+    "bcrypt": "^5.1.1",
+    "chai": "^5.1.2",
+    "chai-http": "^5.1.1",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.1.0",
+    "knex": "^3.1.0",
+    "mocha": "^11.0.1",
+    "pg": "^8.13.1",
+    "sinon": "^19.0.2",
+    "sinon-chai": "^4.0.0"
+  },
+  "devDependencies": {
+    "@babel/register": "^7.25.9",
+    "nodemon": "^3.1.7"
+  }
+}
