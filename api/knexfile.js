@@ -1,4 +1,4 @@
-// Update with your config settings.
+import { dbConfig } from "./src/common/config/config.js";
 
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
@@ -7,11 +7,11 @@ export default {
   development: {
     client: "pg",
     connection: {
-      host: "localhost",
-      port: 5432,
-      user: "postgres",
-      password: "P@$$w0rd1",
-      database: "tamang_gastos",
+      host: dbConfig.host,
+      port: dbConfig.port,
+      user: dbConfig.user,
+      password: dbConfig.pass,
+      database: dbConfig.databaseName,
     },
     migrations: {
       directory: "../db/migrations",
@@ -21,33 +21,3 @@ export default {
     },
   },
 };
-// export const staging = {
-//   client: "postgresql",
-//   connection: {
-//     database: "my_db",
-//     user: "username",
-//     password: "password",
-//   },
-//   pool: {
-//     min: 2,
-//     max: 10,
-//   },
-//   migrations: {
-//     tableName: "knex_migrations",
-//   },
-// };
-// export const production = {
-//   client: "postgresql",
-//   connection: {
-//     database: "my_db",
-//     user: "username",
-//     password: "password",
-//   },
-//   pool: {
-//     min: 2,
-//     max: 10,
-//   },
-//   migrations: {
-//     tableName: "knex_migrations",
-//   },
-// };
