@@ -1,7 +1,8 @@
+import { emailConfig } from "../config/config.js";
 import nodemailer from "nodemailer";
 
 export default class EmailUtils {
-  constructor(emailConfig) {
+  constructor() {
     this.transporter = nodemailer.createTransport({
       host: emailConfig.smtpServer,
       port: emailConfig.smtpPort,
@@ -11,13 +12,11 @@ export default class EmailUtils {
         pass: emailConfig.smtpPassword,
       },
     });
-
-    this.emailConfig = emailConfig;
   }
 
   async sendEmail(toEmail, toName, subject, htmlContent) {
     const mailOptions = {
-      from: this.emailConfig.fromEmail,
+      from: emailConfig.fromEmail,
       to: toEmail,
       subject,
       html: htmlContent,
@@ -27,18 +26,18 @@ export default class EmailUtils {
   }
 
   getFromEmail() {
-    return this.emailConfig.fromEmail;
+    return emailConfig.fromEmail;
   }
 
   getFromName() {
-    return this.emailConfig.fromName;
+    return emailConfig.fromName;
   }
 
   getEmailConfirmationSubject() {
-    return this.emailConfig.emailConfirmationSubject;
+    return emailConfig.emailConfirmationSubject;
   }
 
   getEmailConfirmedSubject() {
-    return this.emailConfig.emailConfirmedSubject;
+    return emailConfig.emailConfirmedSubject;
   }
 }

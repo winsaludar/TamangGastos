@@ -2,6 +2,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+export const appConfig = {
+  baseUrl: process.env.APP_BASE_URL,
+  resetPasswordUrl: process.env.APP_RESET_PASSWORD_URL,
+  confirmEmailUrl: process.env.APP_CONFIRM_EMAIL_URL,
+};
+
 export const jwtConfig = {
   secret: process.env.JWT_SECRET,
   expiresIn: "1h",

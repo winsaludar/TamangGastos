@@ -1,39 +1,7 @@
-import {
-  badRequestSchema,
-  internalServerErrorSchema,
-} from "../../../common/schemas/responseSchema.js";
-import {
-  loginRequestSchema,
-  loginResponseSchema,
-} from "./schemas/loginSchema.js";
-import {
-  registerRequestSchema,
-  registerResponseSchema,
-} from "./schemas/registerSchema.js";
-
-const registerMetadata = {
-  schema: {
-    description: "Register user",
-    response: {
-      200: registerResponseSchema,
-      400: badRequestSchema,
-      500: internalServerErrorSchema,
-    },
-    body: registerRequestSchema,
-  },
-};
-
-const loginMetadata = {
-  schema: {
-    description: "Login user",
-    response: {
-      200: loginResponseSchema,
-      400: badRequestSchema,
-      500: internalServerErrorSchema,
-    },
-    body: loginRequestSchema,
-  },
-};
+import { forgotPasswordMetadata } from "./metadatas/forgotPasswordMetadata.js";
+import { loginMetadata } from "./metadatas/loginMetadata.js";
+import { registerMetadata } from "./metadatas/registerMetadata.js";
+import { resetPasswordMetadata } from "./metadatas/resetPasswordMetadata.js";
 
 export default async function authRoutes(fastify, options) {
   fastify.post("/register", registerMetadata, async (request, reply) => {
@@ -57,4 +25,16 @@ export default async function authRoutes(fastify, options) {
       data: { user, token },
     });
   });
+
+  fastify.post(
+    "/forgot-password",
+    forgotPasswordMetadata,
+    async (request, reply) => {}
+  );
+
+  fastify.post(
+    "/reset-password",
+    resetPasswordMetadata,
+    async (request, reply) => {}
+  );
 }
