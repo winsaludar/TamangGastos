@@ -10,11 +10,12 @@ export default class TokenRepository {
    * Find user token using their id
    *
    * @param {string} userId - The user_id of the token
+   * @param {string} tokenType - The token_type of the token
    * @returns {Token} - The token domain entity or null if not found
    */
-  async findByUserId(userId) {
+  async findByUserId(userId, tokenType) {
     const row = await knexInstance(this.tableName)
-      .where({ user_id: userId })
+      .where({ user_id: userId, token_type: tokenType })
       .andWhere("expires_at", ">", new Date()) // Ensure token is not expired
       .orderBy("expires_at", "desc")
       .first();

@@ -62,7 +62,10 @@ export default class AuthService {
 
     // Return existing token if not yet expired
     // otherwise create new one
-    const existingToken = await this.tokenRepository.findByUserId(user.id);
+    const existingToken = await this.tokenRepository.findByUserId(
+      user.id,
+      TokenType.ACCESS
+    );
     let token;
     if (existingToken) {
       token = existingToken.token;
