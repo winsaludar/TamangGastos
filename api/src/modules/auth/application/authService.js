@@ -4,10 +4,11 @@ import Token from "../../token/domain/token.js";
 import User from "../../user/domain/user.js";
 
 export default class AuthService {
-  constructor(userRepository, tokenRepository, jwtUtils) {
+  constructor(userRepository, tokenRepository, jwtUtils, authEmailService) {
     this.userRepository = userRepository;
     this.tokenRepository = tokenRepository;
     this.jwtUtils = jwtUtils;
+    this.authEmailService = authEmailService;
   }
 
   async registerUser(userData) {
@@ -24,14 +25,21 @@ export default class AuthService {
       throw new HttpError("Username or email already in used", 400);
     }
 
+    // Save user to database
     const hashedPassword = await Auth.hashPassword(userData.password);
     const user = User.create({
       username: userData.username,
       email: userData.email,
       passwordHash: hashedPassword,
+      isActive: false,
     });
-
     const result = await this.userRepository.save(user);
+
+    // Send email verification
+    await this.authEmailService.sendEmailConfirmation(
+      user.email,
+      user.firstName ?? user.username
+    );
 
     return { id: result.id, username: user.username, email: user.email };
   }
@@ -39,9 +47,11 @@ export default class AuthService {
   async loginUser(email, password) {
     const errorMessage = "Invalid email or password";
 
+    // Verify if user exist
     const user = await this.userRepository.findByUsernameOrEmail(null, email);
     if (user === null) throw new HttpError(errorMessage, 401);
 
+    // Verify if password is correct
     const isValidPassword = await Auth.verifyPassword(
       password,
       user.passwordHash
@@ -49,6 +59,7 @@ export default class AuthService {
     if (!isValidPassword) throw new HttpError(errorMessage, 401);
 
     // Return existing token if not yet expired
+    // otherwise create new one
     const existingToken = await this.tokenRepository.findByUserId(user.id);
     let token;
     if (existingToken) {
@@ -68,7 +79,6 @@ export default class AuthService {
         tokenType: "access",
         expiresAt: new Date(tokenExpiresAt),
       });
-      console.log(newToken);
       await this.tokenRepository.save(newToken);
     }
 
