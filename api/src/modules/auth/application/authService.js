@@ -1,7 +1,9 @@
 import Auth from "../domain/auth.js";
 import HttpError from "../../../common/errors/httpError.js";
 import Token from "../../token/domain/token.js";
+import TokenType from "../../token/domain/tokenType.js";
 import User from "../../user/domain/user.js";
+import { jwtConfig } from "../../../common/config/config.js";
 
 export default class AuthService {
   constructor(userRepository, tokenRepository, jwtUtils, authEmailService) {
@@ -65,18 +67,21 @@ export default class AuthService {
     if (existingToken) {
       token = existingToken.token;
     } else {
-      token = await this.jwtUtils.generateToken({
-        id: user.id,
-        email: user.email,
+      token = await this.jwtUtils.generateToken(
+        {
+          id: user.id,
+          email: user.email,
 
-        // Add additional custom claims here...
-      });
+          // Add additional custom claims here...
+        },
+        jwtConfig.accessTokenExpiresIn
+      );
       const tokenExpiresAt = await this.jwtUtils.getTokenExpiry(token);
 
       const newToken = Token.create({
         userId: user.id,
         token: token,
-        tokenType: "access",
+        tokenType: TokenType.ACCESS,
         expiresAt: new Date(tokenExpiresAt),
       });
       await this.tokenRepository.save(newToken);
@@ -89,6 +94,39 @@ export default class AuthService {
   }
 
   async forgotPassword(email) {
+    if (!email || email.trim() === "") {
+      throw new HttpError("Email cannot be empty", 400);
+    }
+
+    // Check if email exist in the database
+    const user = await this.userRepository.findByUsernameOrEmail(null, email);
+    if (user === null) throw new HttpError("Email does not exist", 400);
+
+    // Generate a token using the ff: id, username, email
+    const token = await this.jwtUtils.generateToken(
+      {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+      },
+      jwtConfig.forgotPasswordTokenExpiresIn
+    );
+    const tokenExpiresAt = await this.jwtUtils.getTokenExpiry(token);
+    const newToken = Token.create({
+      userId: user.id,
+      token: token,
+      tokenType: TokenType.ONE_TIME_TOKEN,
+      expiresAt: new Date(tokenExpiresAt),
+    });
+    await this.tokenRepository.save(newToken);
+
+    return {
+      user: { id: user.Id, username: user.username, email: user.email },
+      token,
+    };
+  }
+
+  async resetPassword(id, username, email, token) {
     // TODO
   }
 

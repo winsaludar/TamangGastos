@@ -1,7 +1,9 @@
 import * as chai from "chai";
 
 import Auth from "../../../../src/modules/auth/domain/auth.js";
+import AuthEmailService from "../../../../src/modules/auth/application/authEmailService.js";
 import AuthService from "../../../../src/modules/auth/application/authService.js";
+import EmailUtils from "../../../../src/common/utils/emailUtils.js";
 import HttpError from "../../../../src/common/errors/httpError.js";
 import JwtUtils from "../../../../src/common/utils/jwtUtils.js";
 import Token from "../../../../src/modules/token/domain/token.js";
@@ -24,15 +26,20 @@ describe("Auth Service", () => {
   let mockUserRepository;
   let mockTokenRepository;
   let mockJwtUtils;
+  let mockEmailUtils;
+  let mockAuthEmailService;
 
   beforeEach(() => {
     mockUserRepository = sinon.createStubInstance(UserRepository);
     mockTokenRepository = sinon.createStubInstance(TokenRepository);
     mockJwtUtils = sinon.createStubInstance(JwtUtils);
+    mockEmailUtils = sinon.createStubInstance(EmailUtils);
+    mockAuthEmailService = sinon.createStubInstance(AuthEmailService);
     authService = new AuthService(
       mockUserRepository,
       mockTokenRepository,
-      mockJwtUtils
+      mockJwtUtils,
+      mockAuthEmailService
     );
   });
 
@@ -48,6 +55,7 @@ describe("Auth Service", () => {
         passwordHash: hashedPassword,
       });
       mockUserRepository.save.resolves(mockUser);
+      mockAuthEmailService.sendEmailConfirmation.resolves({});
 
       // Act
       const result = await authService.registerUser(request);

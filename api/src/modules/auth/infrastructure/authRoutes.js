@@ -29,7 +29,15 @@ export default async function authRoutes(fastify, options) {
   fastify.post(
     "/forgot-password",
     forgotPasswordMetadata,
-    async (request, reply) => {}
+    async (request, reply) => {
+      const { email } = request.body;
+      const { user, token } = await fastify.authService.forgotPassword(email);
+      reply.send({
+        message: "If the email exists, a reset link will be sent",
+        status: 200,
+        data: { user, token },
+      });
+    }
   );
 
   fastify.post(

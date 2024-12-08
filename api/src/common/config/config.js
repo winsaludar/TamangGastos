@@ -10,7 +10,8 @@ export const appConfig = {
 
 export const jwtConfig = {
   secret: process.env.JWT_SECRET,
-  expiresIn: "1h",
+  accessTokenExpiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRY,
+  forgotPasswordTokenExpiresIn: process.env.JWT_FORGOT_PASSWORD_TOKEN_EXPIRY,
 };
 
 export const dbConfig = {

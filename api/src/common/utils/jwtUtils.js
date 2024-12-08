@@ -1,12 +1,10 @@
-import { jwtConfig } from "../config/config.js";
-
 export default class JwtUtils {
   constructor(jwt) {
     this.jwt = jwt;
   }
 
-  generateToken(payload) {
-    return this.jwt.sign(payload, { expiresIn: jwtConfig.expiresIn });
+  generateToken(payload, expiresIn) {
+    return this.jwt.sign(payload, { expiresIn: expiresIn });
   }
 
   verifyToken(token) {
