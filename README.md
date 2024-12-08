@@ -7,17 +7,27 @@ Web application designed to help users manage their finances by tracking income 
 To run this project, you will need to add the following environment variables to your .env file.
 Make sure to create the file under the `api` folder (same directory where your `package.json` is located).
 
-`DB_USER`
+```bash
+DB_USER=
+DB_PASS=
+DB_HOST=
+DB_PORT=
+DB_DATABASE_NAME=
 
-`DB_PASS`
+JWT_SECRET=
 
-`DB_HOST`
+BREVO_API_KEY=
 
-`DB_PORT`
+SMTP_SERVER=
+SMTP_PORT=
+SMTP_LOGIN=
+SMTP_PASSWORD=
+SMTP_SENDER_FROM_EMAIL=
+SMTP_SENDER_FROM_NAME=
 
-`DB_DATABASE_NAME`
-
-`JWT_SECRET`
+REGISTRATION_EMAIL_CONFIRMATION_SUBJECT=
+REGISTRATION_EMAIL_CONFIRMED_SUBJECT=
+```
 
 ## Run Locally
 

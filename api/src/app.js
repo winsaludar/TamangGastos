@@ -2,7 +2,7 @@ import { emailConfig, jwtConfig } from "./common/config/config.js";
 
 import AuthEmailService from "./modules/auth/application/authEmailService.js";
 import AuthService from "./modules/auth/application/authService.js";
-import EmailUtils from "./common/utils/emailUtils.js";
+import EmailUtils from "./common/utils/emailUtils-old.js";
 import Fastify from "fastify";
 import JwtUtils from "./common/utils/jwtUtils.js";
 import TokenRepository from "./modules/token/infrastructure/tokenRepository.js";
