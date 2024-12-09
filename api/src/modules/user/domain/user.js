@@ -1,4 +1,7 @@
 export default class User {
+  // Private static field to track instance creation
+  static #allowConstructor = false;
+
   constructor({
     id,
     username,
@@ -10,6 +13,9 @@ export default class User {
     createdAt,
     updatedAt,
   }) {
+    if (!User.#allowConstructor)
+      throw new Error("Use 'User.create()' to instantiate this class");
+
     this.id = id;
     this.username = username;
     this.email = email;
@@ -32,7 +38,18 @@ export default class User {
     createdAt,
     updatedAt,
   }) {
-    return new User({
+    User.#allowConstructor = true;
+
+    if (!username || username.trim().length <= 0)
+      throw new Error("Username cannot be empty");
+
+    if (!email || email.trim().length <= 0)
+      throw new Error("Email cannot be empty");
+
+    if (!passwordHash || passwordHash.trim().length <= 0)
+      throw new Error("PasswordHash cannot be empty");
+
+    const newUser = new User({
       id: id ?? null,
       username,
       email,
@@ -43,6 +60,10 @@ export default class User {
       createdAt: createdAt ?? new Date(),
       updatedAt: updatedAt ?? new Date(),
     });
+
+    User.#allowConstructor = false;
+
+    return newUser;
   }
 
   getId() {
@@ -69,5 +90,10 @@ export default class User {
 
   getFullName() {
     return `${this.firstName || ""} ${this.lastName || ""}`.trim();
+  }
+
+  setPassword(password) {
+    this.passwordHash = password;
+    this.updatedAt = new Date();
   }
 }

@@ -1,7 +1,9 @@
 import * as chai from "chai";
 
 import Auth from "../../../../src/modules/auth/domain/auth.js";
+import AuthEmailService from "../../../../src/modules/auth/application/authEmailService.js";
 import AuthService from "../../../../src/modules/auth/application/authService.js";
+import EmailUtils from "../../../../src/common/utils/emailUtils.js";
 import HttpError from "../../../../src/common/errors/httpError.js";
 import JwtUtils from "../../../../src/common/utils/jwtUtils.js";
 import Token from "../../../../src/modules/token/domain/token.js";
@@ -24,51 +26,60 @@ describe("Auth Service", () => {
   let mockUserRepository;
   let mockTokenRepository;
   let mockJwtUtils;
+  let mockEmailUtils;
+  let mockAuthEmailService;
 
   beforeEach(() => {
     mockUserRepository = sinon.createStubInstance(UserRepository);
     mockTokenRepository = sinon.createStubInstance(TokenRepository);
     mockJwtUtils = sinon.createStubInstance(JwtUtils);
+    mockEmailUtils = sinon.createStubInstance(EmailUtils);
+    mockAuthEmailService = sinon.createStubInstance(AuthEmailService);
     authService = new AuthService(
       mockUserRepository,
       mockTokenRepository,
-      mockJwtUtils
+      mockJwtUtils,
+      mockAuthEmailService
     );
   });
 
   describe("Register User", () => {
     it("should return a new user object with the new id", async () => {
       // Arrange
-      const request = { username, email, password, retypePassword: password };
       hashedPassword = await Auth.hashPassword(password);
-      const mockUser = User.create({
-        id: 1,
-        username: request.username,
-        email: request.email,
-        passwordHash: hashedPassword,
-      });
-      mockUserRepository.save.resolves(mockUser);
+      const userId = 1;
+      mockJwtUtils.generateToken.resolves("fake-token");
+      mockUserRepository.save.resolves(userId);
+      mockAuthEmailService.sendEmailConfirmation.resolves({});
 
       // Act
-      const result = await authService.registerUser(request);
+      const result = await authService.registerUser(username, email, password);
+      console.log(result);
 
       // Assert
       expect(mockUserRepository.save).to.have.been.calledOnce;
       expect(result).to.be.not.null;
-      expect(result).to.have.property("id").to.be.equal(1);
+      expect(result).to.have.property("id").to.be.equal(userId);
       expect(result).to.have.property("username").to.be.equal(username);
       expect(result).to.have.property("email").to.be.equal(email);
     });
 
-    it("should throw HttpError object when user data is null", async () => {
+    it("should throw HttpError object when email is already exist", async () => {
       try {
+        // Arrange
+        mockUserRepository.findByUsernameOrEmail.resolves({
+          id: 1,
+          username,
+          email,
+        });
+
         // Act
         await authService.registerUser(null);
       } catch (error) {
         // Assert
         expect(mockUserRepository.save).to.have.been.not.called;
         expect(error).to.be.instanceOf(HttpError);
-        expect(error.message).to.be.equal("User data cannot be empty");
+        expect(error.message).to.be.equal("Username or email already in used");
         expect(error.statusCode).to.be.equal(400);
       }
     });

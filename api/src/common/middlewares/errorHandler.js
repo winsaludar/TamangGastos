@@ -9,6 +9,7 @@ export default function errorHandler(error, request, reply) {
         .map((x) => x.message),
     });
   } else if (error instanceof HttpError) {
+    console.log(error);
     reply.status(error.statusCode).send({ message: error.message });
   } else {
     // TODO: log error

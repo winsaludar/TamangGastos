@@ -1,4 +1,6 @@
 export default class Token {
+  static #allowConstructor = false;
+
   constructor({
     id,
     userId,
@@ -8,6 +10,9 @@ export default class Token {
     createdAt,
     updatedAt,
   }) {
+    if (!Token.#allowConstructor)
+      throw new Error("Use 'Token.create()' to instantiate this class");
+
     this.id = id;
     this.userId = userId;
     this.token = token;
@@ -26,7 +31,19 @@ export default class Token {
     createdAt,
     updatedAt,
   }) {
-    return new Token({
+    Token.#allowConstructor = true;
+
+    if (!userId) throw new Error("UserId cannot be empty");
+
+    if (!token || token.trim().length <= 0)
+      throw new Error("Token cannot be empty");
+
+    if (!tokenType || tokenType.trim().length <= 0)
+      throw new Error("TokenType cannot be empty");
+
+    if (!expiresAt) throw new Error("ExpiresAt cannot be empty");
+
+    const newToken = new Token({
       id: id ?? null,
       userId,
       token,
@@ -35,6 +52,10 @@ export default class Token {
       createdAt: createdAt ?? new Date(),
       updatedAt: updatedAt ?? new Date(),
     });
+
+    Token.#allowConstructor = false;
+
+    return newToken;
   }
 
   getToken() {
@@ -47,5 +68,10 @@ export default class Token {
 
   getTokenType() {
     return this.tokenType;
+  }
+
+  setExpiresAt(expiresAt) {
+    this.expiresAt = expiresAt;
+    this.updatedAt = new Date();
   }
 }

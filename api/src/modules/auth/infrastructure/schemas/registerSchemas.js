@@ -33,7 +33,7 @@ export const registerRequestSchema = {
   required: ["username", "email", "password", "retypePassword"],
   errorMessage: {
     required: {
-      name: "Name property is required",
+      username: "Username property is required",
       email: "Email property is required",
       password: "Password property is required",
       retypePassword: "Re-type Password property is required",

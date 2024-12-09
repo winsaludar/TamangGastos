@@ -1,4 +1,5 @@
 import User from "../domain/user.js";
+import knex from "knex";
 import { knexInstance } from "../../../common/config/databaseConfig.js";
 
 export default class UserRepository {
@@ -11,7 +12,7 @@ export default class UserRepository {
    *
    * @param {string} username - The username of the user
    * @param {string} email - The email of the user
-   * @returns {User | null} - The user domain entity or null if not found
+   * @returns {Promise<User> | Promise<null>} - The user domain entity or null if not found
    */
   async findByUsernameOrEmail(username, email) {
     const row = await knexInstance(this.tableName)
@@ -26,7 +27,7 @@ export default class UserRepository {
    * Save a new user to the database
    *
    * @param {User} user - The user domain entity to save
-   * @returns {number} - The id of the saved user
+   * @returns {Promise<number>} - The id of the saved user
    */
   async save(user) {
     const {
@@ -40,7 +41,7 @@ export default class UserRepository {
       updatedAt,
     } = user;
 
-    const [id] = await knexInstance(this.tableName)
+    const [result] = await knexInstance(this.tableName)
       .insert({
         username,
         email,
@@ -53,7 +54,27 @@ export default class UserRepository {
       })
       .returning("id");
 
-    return id;
+    return result.id;
+  }
+
+  /**
+   * Update existing user
+   *
+   * @param {User} user The user to be updated
+   * @returns {Promise<bool>} True or false wether the user has been updated
+   */
+  async update(user) {
+    const updatedRows = await knexInstance(this.tableName)
+      .where({ id: user.id })
+      .update({
+        password_hash: user.passwordHash,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        is_active: user.isActive,
+        updated_at: user.updatedAt,
+      });
+
+    return updatedRows > 0;
   }
 
   /**

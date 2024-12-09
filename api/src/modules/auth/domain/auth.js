@@ -1,6 +1,10 @@
 import bcrypt from "bcrypt";
 
 export default class Auth {
+  constructor() {
+    throw new Error("Auth class cannot be instantiated");
+  }
+
   static async hashPassword(password) {
     if (!password || password.length <= 0)
       throw new Error("Password cannot be empty");
