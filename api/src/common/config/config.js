@@ -4,8 +4,8 @@ dotenv.config();
 
 export const appConfig = {
   baseUrl: process.env.APP_BASE_URL,
-  resetPasswordUrl: process.env.APP_RESET_PASSWORD_URL,
   confirmEmailUrl: process.env.APP_CONFIRM_EMAIL_URL,
+  forgotPasswordUrl: process.env.APP_FORGOT_PASSWORD_URL,
 };
 
 export const jwtConfig = {
@@ -32,5 +32,5 @@ export const emailConfig = {
   fromEmail: process.env.SMTP_SENDER_FROM_EMAIL,
   fromName: process.env.SMTP_SENDER_FROM_NAME,
   emailConfirmationSubject: process.env.REGISTRATION_EMAIL_CONFIRMATION_SUBJECT,
-  emailConfirmedSubject: process.env.REGISTRATION_EMAIL_CONFIRMED_SUBJECT,
+  forgotPasswordSubject: process.env.FORGOT_PASSWORD_SUBJECT,
 };

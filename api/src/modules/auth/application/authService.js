@@ -145,10 +145,12 @@ export default class AuthService {
       );
     }
 
-    return {
-      user: { id: user.Id, username: user.username, email: user.email },
+    // Send email verification
+    await this.authEmailService.sendForgotPasswordUrl(
+      user.email,
       token,
-    };
+      user.firstName ?? user.username
+    );
   }
 
   async resetPassword(email, password, token) {
@@ -169,6 +171,15 @@ export default class AuthService {
     const user = await this.userRepository.findByUsernameOrEmail(null, email);
     if (user === null) throw new HttpError("Email does not exist", 400);
 
+    // Double-check token validity from our database copy
+    const isTokenValid = await this.tokenRepository.isTokenValid(
+      user.id,
+      token,
+      TokenType.ONE_TIME_TOKEN
+    );
+    if (!isTokenValid)
+      throw new HttpError("Link is invalid, please request a new one", 400);
+
     //  Generate new password and update user
     const newPassword = await Auth.hashPassword(password);
     const isSuccessful = await this.userRepository.updatePassword(
@@ -177,6 +188,10 @@ export default class AuthService {
     );
     if (!isSuccessful)
       throw new Error("Unable to update password, please try again later!");
+
+    // TODO: Expires token so it will never be used again
+
+    // TODO: Remove existing login tokens
   }
 
   async verifyEmail(email, token) {
@@ -207,7 +222,6 @@ export default class AuthService {
       token,
       TokenType.ONE_TIME_TOKEN
     );
-    console.log(user.id, token, TokenType.ONE_TIME_TOKEN, isTokenValid);
     if (!isTokenValid)
       throw new HttpError("Link is invalid, please request a new one", 400);
 
@@ -215,6 +229,8 @@ export default class AuthService {
     const isSuccessful = await this.userRepository.enableUser(user.id);
     if (!isSuccessful)
       throw new Error("Unable to active user, please try again later!");
+
+    // TODO: Expires token so it will never be used again
   }
 
   async resendEmailConfirmationLink(email) {

@@ -1,4 +1,5 @@
-import { appConfig } from "../../../common/config/config.js";
+import { appConfig, emailConfig } from "../../../common/config/config.js";
+
 import fs from "fs";
 import path from "path";
 
@@ -10,12 +11,38 @@ export default class AuthEmailService {
   async sendEmailConfirmation(email, token, name) {
     try {
       const confirmEmailUrl = `${appConfig.baseUrl}/${appConfig.confirmEmailUrl}?email=${email}&token=${token}`;
-      const emailSubject = this.emailUtils.getEmailConfirmationSubject();
-      const emailBody = generateEmailConfirmationTemplate(
+      const emailSubject = emailConfig.emailConfirmationSubject;
+      const templatePath = path.resolve(
+        "../templates",
+        "email-confirmation.html"
+      );
+      const emailBody = generateEmailTemplate(
         name,
         confirmEmailUrl,
-        this.emailUtils.getFromEmail(),
-        this.emailUtils.getFromName()
+        emailConfig.fromEmail,
+        emailConfig.fromName,
+        templatePath
+      );
+
+      await this.emailUtils.sendEmail(email, emailSubject, emailBody);
+    } catch (error) {
+      console.log("Send Error", error);
+      // TODO: Add retry policy
+      // TODO: Log error
+    }
+  }
+
+  async sendForgotPasswordUrl(email, token, name) {
+    try {
+      const forgotPasswordUrl = `${appConfig.baseUrl}/${appConfig.forgotPasswordUrl}?email=${email}&token=${token}`;
+      const emailSubject = emailConfig.forgotPasswordSubject;
+      const templatePath = path.resolve("../templates", "forgot-password.html");
+      const emailBody = generateEmailTemplate(
+        name,
+        forgotPasswordUrl,
+        emailConfig.fromEmail,
+        emailConfig.fromName,
+        templatePath
       );
 
       await this.emailUtils.sendEmail(email, emailSubject, emailBody);
@@ -28,21 +55,26 @@ export default class AuthEmailService {
 }
 
 /**
- * PRIVATE FUNCTIONS
+ *
+ * @param {string} username The username of the new user
+ * @param {string} link The link where the user will be redirected
+ * @param {string} fromEmail The email of the sender (app email)
+ * @param {string} fromName The name of the sender (app name)
+ * @param {string} templatePath The path of the template file
+ * @returns {string} Email body content in HTML format
  */
-
-function generateEmailConfirmationTemplate(
+function generateEmailTemplate(
   username,
-  confirmationLink,
+  link,
   fromEmail,
-  fromName
+  fromName,
+  templatePath
 ) {
-  const filePath = path.resolve("../templates", "email-confirmation.html");
-  const template = fs.readFileSync(filePath, "utf-8");
+  const template = fs.readFileSync(templatePath, "utf-8");
 
   return template
     .replace("{{username}}", username)
-    .replace("{{confirmationLink}}", confirmationLink)
+    .replace("{{link}}", link)
     .replace("{{fromEmail}}", fromEmail)
     .replace("{{fromName}}", fromName);
 }

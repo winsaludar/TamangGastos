@@ -37,9 +37,5 @@ export const forgotPasswordResponseSchema = {
   ...okSchema,
   properties: {
     ...okSchema.properties,
-    data: {
-      user: { ref: "#userSchema" },
-      token: { type: "string" },
-    },
   },
 };

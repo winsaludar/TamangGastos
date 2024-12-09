@@ -38,11 +38,10 @@ export default async function authRoutes(fastify, options) {
     forgotPasswordMetadata,
     async (request, reply) => {
       const { email } = request.body;
-      const { user, token } = await fastify.authService.forgotPassword(email);
+      await fastify.authService.forgotPassword(email);
       reply.send({
-        message: "If the email exists, a reset link will be sent",
+        message: "Forgot password successful",
         status: 200,
-        data: { user, token },
       });
     }
   );
@@ -67,7 +66,7 @@ export default async function authRoutes(fastify, options) {
       const { email, token } = request.body;
       await fastify.authService.verifyEmail(email, token);
       reply.send({
-        message: "Your email has been cofirmed, you may now login",
+        message: "Validate email successful",
         status: 200,
       });
     }
@@ -80,8 +79,7 @@ export default async function authRoutes(fastify, options) {
       const { email } = request.body;
       await fastify.authService.resendEmailConfirmationLink(email);
       reply.send({
-        message:
-          "Link has been re-send, please check your email inbox or spam folder",
+        message: "Re-send email confirmation link successful",
         status: 200,
       });
     }

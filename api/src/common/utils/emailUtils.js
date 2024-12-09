@@ -24,20 +24,4 @@ export default class EmailUtils {
 
     this.transporter.sendMail(mailOptions);
   }
-
-  getFromEmail() {
-    return emailConfig.fromEmail;
-  }
-
-  getFromName() {
-    return emailConfig.fromName;
-  }
-
-  getEmailConfirmationSubject() {
-    return emailConfig.emailConfirmationSubject;
-  }
-
-  getEmailConfirmedSubject() {
-    return emailConfig.emailConfirmedSubject;
-  }
 }
