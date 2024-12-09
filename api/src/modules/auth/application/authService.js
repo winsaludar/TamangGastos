@@ -1,6 +1,7 @@
 import Auth from "../domain/auth.js";
 import HttpError from "../../../common/errors/httpError.js";
 import Token from "../../token/domain/token.js";
+import TokenRepository from "../../token/infrastructure/tokenRepository.js";
 import TokenType from "../../token/domain/tokenType.js";
 import User from "../../user/domain/user.js";
 import { jwtConfig } from "../../../common/config/config.js";
@@ -13,37 +14,44 @@ export default class AuthService {
     this.authEmailService = authEmailService;
   }
 
-  async registerUser(userData) {
-    if (!userData) {
-      throw new HttpError("User data cannot be empty", 400);
-    }
-
+  async registerUser(username, email, password) {
     // Make sure user does not exist yet
     const existingUser = await this.userRepository.findByUsernameOrEmail(
-      userData.username,
-      userData.email
+      username,
+      email
     );
-    if (existingUser) {
+    if (existingUser)
       throw new HttpError("Username or email already in used", 400);
-    }
 
     // Save user to database
-    const hashedPassword = await Auth.hashPassword(userData.password);
+    const hashedPassword = await Auth.hashPassword(password);
     const user = User.create({
-      username: userData.username,
-      email: userData.email,
+      username,
+      email,
       passwordHash: hashedPassword,
       isActive: false,
     });
-    const result = await this.userRepository.save(user);
+    const userId = await this.userRepository.save(user);
 
     // Send email verification
+    const token = await generateToken(
+      {
+        id: userId,
+        username: user.username,
+        email: user.email,
+      },
+      TokenType.ONE_TIME_TOKEN,
+      jwtConfig.confirmEmailTokenExpiresIn,
+      this.jwtUtils,
+      this.tokenRepository
+    );
     await this.authEmailService.sendEmailConfirmation(
       user.email,
+      token,
       user.firstName ?? user.username
     );
 
-    return { id: result.id, username: user.username, email: user.email };
+    return { id: userId, username: user.username, email: user.email };
   }
 
   async loginUser(email, password) {
@@ -73,24 +81,19 @@ export default class AuthService {
     if (existingToken) {
       token = existingToken.token;
     } else {
-      token = await this.jwtUtils.generateToken(
+      token = await generateToken(
         {
           id: user.id,
+          username: user.username,
           email: user.email,
 
           // Add additional custom claims here...
         },
-        jwtConfig.accessTokenExpiresIn
+        TokenType.ACCESS,
+        jwtConfig.accessTokenExpiresIn,
+        this.jwtUtils,
+        this.tokenRepository
       );
-      const tokenExpiresAt = await this.jwtUtils.getTokenExpiry(token);
-
-      const newToken = Token.create({
-        userId: user.id,
-        token: token,
-        tokenType: TokenType.ACCESS,
-        expiresAt: new Date(tokenExpiresAt),
-      });
-      await this.tokenRepository.save(newToken);
     }
 
     return {
@@ -118,22 +121,17 @@ export default class AuthService {
     if (existingToken) {
       token = existingToken.token;
     } else {
-      token = await this.jwtUtils.generateToken(
+      token = await generateToken(
         {
           id: user.id,
-          email: user.email,
           username: user.username,
+          email: user.email,
         },
-        jwtConfig.forgotPasswordTokenExpiresIn
+        TokenType.ONE_TIME_TOKEN,
+        jwtConfig.forgotPasswordTokenExpiresIn,
+        this.jwtUtils,
+        this.tokenRepository
       );
-      const tokenExpiresAt = await this.jwtUtils.getTokenExpiry(token);
-      const newToken = Token.create({
-        userId: user.id,
-        token: token,
-        tokenType: TokenType.ONE_TIME_TOKEN,
-        expiresAt: new Date(tokenExpiresAt),
-      });
-      await this.tokenRepository.save(newToken);
     }
 
     return {
@@ -179,4 +177,34 @@ export default class AuthService {
   async verifyEmail(email, otp) {
     // TODO
   }
+}
+
+/**
+ *
+ * @param {User} user - The user data use for generating token
+ * @param {string} expiresIn - The expiry of the token that will be generated
+ * @param {TokenType} tokenType - The type of token to generate
+ * @param {JwtUtils} jwtUtils - Utility class for JWT related functionalities
+ * @param {TokenRepository} tokenRepository - Repository class for Token entity
+ * @returns {Promise<string>} The generated token string
+ */
+async function generateToken(
+  user,
+  tokenType,
+  expiresIn,
+  jwtUtils,
+  tokenRepository
+) {
+  const token = await jwtUtils.generateToken({ ...user }, expiresIn);
+  const tokenExpiresAt = await jwtUtils.getTokenExpiry(token);
+  const newToken = Token.create({
+    userId: user.id,
+    token: token,
+    tokenType: tokenType,
+    expiresAt: new Date(tokenExpiresAt),
+  });
+
+  await tokenRepository.save(newToken);
+
+  return token;
 }

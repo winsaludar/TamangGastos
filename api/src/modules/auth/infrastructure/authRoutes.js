@@ -5,7 +5,12 @@ import { resetPasswordMetadata } from "./metadatas/resetPasswordMetadata.js";
 
 export default async function authRoutes(fastify, options) {
   fastify.post("/register", registerMetadata, async (request, reply) => {
-    const user = await fastify.authService.registerUser(request.body);
+    const { username, email, password } = request.body;
+    const user = await fastify.authService.registerUser(
+      username,
+      email,
+      password
+    );
     reply.send({
       message: "Register successful",
       status: 200,

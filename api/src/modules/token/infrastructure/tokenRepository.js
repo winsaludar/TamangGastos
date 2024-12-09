@@ -26,10 +26,10 @@ export default class TokenRepository {
    * Save a new user token to the database
    *
    * @param {Token} token - The token domain entity to save
-   * @returns {number} - The id of the saved token
+   * @returns {Promise<number>} - The id of the saved token
    */
   async save(token) {
-    const [id] = await knexInstance(this.tableName)
+    const [result] = await knexInstance(this.tableName)
       .insert({
         user_id: token.userId,
         token: token.token,
@@ -40,7 +40,7 @@ export default class TokenRepository {
       })
       .returning("id");
 
-    return id;
+    return result.id;
   }
 
   /**

@@ -12,6 +12,7 @@ export const jwtConfig = {
   secret: process.env.JWT_SECRET,
   accessTokenExpiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRY,
   forgotPasswordTokenExpiresIn: process.env.JWT_FORGOT_PASSWORD_TOKEN_EXPIRY,
+  confirmEmailTokenExpiresIn: process.env.JWT_CONFIRM_EMAIL_TOKEN_EXPIRY,
 };
 
 export const dbConfig = {
