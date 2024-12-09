@@ -91,4 +91,9 @@ export default class User {
   getFullName() {
     return `${this.firstName || ""} ${this.lastName || ""}`.trim();
   }
+
+  setPassword(password) {
+    this.passwordHash = password;
+    this.updatedAt = new Date();
+  }
 }

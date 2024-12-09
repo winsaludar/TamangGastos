@@ -172,24 +172,23 @@ export default class AuthService {
     if (user === null) throw new HttpError("Email does not exist", 400);
 
     // Double-check token validity from our database copy
-    const isTokenValid = await this.tokenRepository.isTokenValid(
-      user.id,
+    const existingToken = await this.tokenRepository.findByTokenValue(
       token,
       TokenType.ONE_TIME_TOKEN
     );
-    if (!isTokenValid)
+    if (existingToken === null)
       throw new HttpError("Link is invalid, please request a new one", 400);
 
     //  Generate new password and update user
     const newPassword = await Auth.hashPassword(password);
-    const isSuccessful = await this.userRepository.updatePassword(
-      user.id,
-      newPassword
-    );
+    user.setPassword(newPassword);
+    const isSuccessful = await this.userRepository.update(user);
     if (!isSuccessful)
       throw new Error("Unable to update password, please try again later!");
 
-    // TODO: Expires token so it will never be used again
+    // Expires token so it will never be used again
+    existingToken.setExpiresAt(new Date());
+    await this.tokenRepository.update(existingToken);
 
     // TODO: Remove existing login tokens
   }
@@ -217,20 +216,22 @@ export default class AuthService {
     if (user.isActive) throw new HttpError("Email is already verified", 400);
 
     // Double-check token validity from our database copy
-    const isTokenValid = await this.tokenRepository.isTokenValid(
-      user.id,
+    const existingToken = await this.tokenRepository.findByTokenValue(
       token,
       TokenType.ONE_TIME_TOKEN
     );
-    if (!isTokenValid)
+    if (existingToken === null)
       throw new HttpError("Link is invalid, please request a new one", 400);
 
     // Enable user
-    const isSuccessful = await this.userRepository.enableUser(user.id);
+    user.activate();
+    const isSuccessful = await this.userRepository.update(user);
     if (!isSuccessful)
       throw new Error("Unable to active user, please try again later!");
 
-    // TODO: Expires token so it will never be used again
+    // Expires token so it will never be used again
+    existingToken.setExpiresAt(new Date());
+    await this.tokenRepository.update(existingToken);
   }
 
   async resendEmailConfirmationLink(email) {

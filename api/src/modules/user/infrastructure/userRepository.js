@@ -58,28 +58,21 @@ export default class UserRepository {
   }
 
   /**
+   * Update existing user
    *
-   * @param {uuid} id The id of the user to be updated
-   * @param {string} password The new hashed password of the user
-   * @returns {Promise<bool>} True or false wether the user password is updated
+   * @param {User} user The user to be updated
+   * @returns {Promise<bool>} True or false wether the user has been updated
    */
-  async updatePassword(id, password) {
+  async update(user) {
     const updatedRows = await knexInstance(this.tableName)
-      .where({ id: id })
-      .update({ password_hash: password, updated_at: new Date() });
-
-    return updatedRows > 0;
-  }
-
-  /**
-   *
-   * @param {uuid} id The id of the user to be enabled
-   * @returns {Promise<bool>} True or false wether the user has been activated
-   */
-  async enableUser(id) {
-    const updatedRows = await knexInstance(this.tableName)
-      .where({ id: id })
-      .update({ is_active: true, updated_at: new Date() });
+      .where({ id: user.id })
+      .update({
+        password_hash: user.passwordHash,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        is_active: user.isActive,
+        updated_at: user.updatedAt,
+      });
 
     return updatedRows > 0;
   }

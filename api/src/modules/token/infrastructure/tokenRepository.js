@@ -11,7 +11,7 @@ export default class TokenRepository {
    *
    * @param {string} userId The user_id of the token
    * @param {TokenType} tokenType The token_type of the token
-   * @returns {Promise<Token>} The token domain entity or null if not found
+   * @returns {Promise<Token> | Promise<null>} The token domain entity or null if not found
    */
   async findByUserId(userId, tokenType) {
     const row = await knexInstance(this.tableName)
@@ -23,20 +23,19 @@ export default class TokenRepository {
   }
 
   /**
+   * Find user token using the token string and token type
    *
-   * @param {string} userId The user_id of the token
    * @param {string} token The token string to be validated
    * @param {TokenType} tokenType  The token type of the token to be validated
-   * @returns {Promise<bool>} True or false wether the token is valid
+   * @returns {Promise<Token> | Promise<null>} The token domain entity or null if not found
    */
-  async isTokenValid(userId, token, tokenType) {
-    const result = await knexInstance(this.tableName)
-      .select(1)
-      .where({ user_id: userId, token: token, token_type: tokenType })
-      // .andWhere("expires_at", ">", new Date())
+  async findByTokenValue(token, tokenType) {
+    const row = await knexInstance(this.tableName)
+      .where({ token: token, token_type: tokenType })
+      .andWhere("expires_at", ">", new Date())
       .first();
 
-    return !!result;
+    return row ? this.toDomain(row) : null;
   }
 
   /**
@@ -58,6 +57,20 @@ export default class TokenRepository {
       .returning("id");
 
     return result.id;
+  }
+
+  /**
+   * Update existing token
+   *
+   * @param {Token} token The token to be updated
+   * @returns {Promise<bool>} True or false wether the token is updated
+   */
+  async update(token) {
+    const updatedRows = await knexInstance(this.tableName)
+      .where({ id: token.id })
+      .update({ expires_at: token.expiresAt, updated_at: token.updatedAt });
+
+    return updatedRows > 0;
   }
 
   /**

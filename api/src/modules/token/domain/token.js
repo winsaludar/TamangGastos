@@ -69,4 +69,9 @@ export default class Token {
   getTokenType() {
     return this.tokenType;
   }
+
+  setExpiresAt(expiresAt) {
+    this.expiresAt = expiresAt;
+    this.updatedAt = new Date();
+  }
 }
