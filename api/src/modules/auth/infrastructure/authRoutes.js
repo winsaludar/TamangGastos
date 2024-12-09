@@ -1,6 +1,7 @@
 import { forgotPasswordMetadata } from "./metadatas/forgotPasswordMetadata.js";
 import { loginMetadata } from "./metadatas/loginMetadata.js";
 import { registerMetadata } from "./metadatas/registerMetadata.js";
+import { resendEmailConfirmationMetadata } from "./metadatas/resendEmailConfirmationMetadata.js";
 import { resetPasswordMetadata } from "./metadatas/resetPasswordMetadata.js";
 import { validateEmailMetadata } from "./metadatas/validateEmailMetadata.js";
 
@@ -67,6 +68,20 @@ export default async function authRoutes(fastify, options) {
       await fastify.authService.verifyEmail(email, token);
       reply.send({
         message: "Your email has been cofirmed, you may now login",
+        status: 200,
+      });
+    }
+  );
+
+  fastify.post(
+    "/resend-email-confirmation",
+    resendEmailConfirmationMetadata,
+    async (request, reply) => {
+      const { email } = request.body;
+      await fastify.authService.resendEmailConfirmationLink(email);
+      reply.send({
+        message:
+          "Link has been re-send, please check your email inbox or spam folder",
         status: 200,
       });
     }

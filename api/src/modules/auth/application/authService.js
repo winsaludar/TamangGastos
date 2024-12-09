@@ -69,7 +69,11 @@ export default class AuthService {
     if (!isValidPassword) throw new HttpError(errorMessage, 401);
 
     // Make sure email is validated
-    if (!user.isActive) throw new HttpError("Email not yet validated.", 401);
+    if (!user.isActive)
+      throw new HttpError(
+        "Email is not yet validated, please verify your email first",
+        401
+      );
 
     // Return existing token if not yet expired
     // otherwise create new one
@@ -110,6 +114,13 @@ export default class AuthService {
     // Check if email exist in the database
     const user = await this.userRepository.findByUsernameOrEmail(null, email);
     if (user === null) throw new HttpError("Email does not exist", 400);
+
+    // Make sure user is activated first
+    if (!user.isActive)
+      throw new HttpError(
+        "Email is not yet validated, please verify your email first",
+        400
+      );
 
     // Return existing token if not yet expired
     // otherwise generate a new token using the ff: id, username, email
@@ -198,15 +209,51 @@ export default class AuthService {
     );
     console.log(user.id, token, TokenType.ONE_TIME_TOKEN, isTokenValid);
     if (!isTokenValid)
-      throw new HttpError(
-        "Link might be tampered, please request a new one",
-        400
-      );
+      throw new HttpError("Link is invalid, please request a new one", 400);
 
     // Enable user
     const isSuccessful = await this.userRepository.enableUser(user.id);
     if (!isSuccessful)
       throw new Error("Unable to active user, please try again later!");
+  }
+
+  async resendEmailConfirmationLink(email) {
+    // Make sure email is registered
+    const user = await this.userRepository.findByUsernameOrEmail(null, email);
+    if (user === null) throw new HttpError("Email does not exist", 400);
+
+    // Make sure user's email is not yet verified
+    if (user.isActive) throw new HttpError("Email is already verified", 400);
+
+    // Return existing token if not yet expired
+    // otherwise generate a new token using the ff: id, username, email
+    let token;
+    const existingToken = await this.tokenRepository.findByUserId(
+      user.id,
+      TokenType.ONE_TIME_TOKEN
+    );
+    if (existingToken) {
+      token = existingToken.token;
+    } else {
+      token = await generateToken(
+        {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+        },
+        TokenType.ONE_TIME_TOKEN,
+        jwtConfig.confirmEmailTokenExpiresIn,
+        this.jwtUtils,
+        this.tokenRepository
+      );
+    }
+
+    // Send email verification
+    await this.authEmailService.sendEmailConfirmation(
+      user.email,
+      token,
+      user.firstName ?? user.username
+    );
   }
 }
 
