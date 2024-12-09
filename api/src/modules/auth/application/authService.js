@@ -105,23 +105,33 @@ export default class AuthService {
     const user = await this.userRepository.findByUsernameOrEmail(null, email);
     if (user === null) throw new HttpError("Email does not exist", 400);
 
-    // Generate a token using the ff: id, username, email
-    const token = await this.jwtUtils.generateToken(
-      {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-      },
-      jwtConfig.forgotPasswordTokenExpiresIn
+    // Return existing token if not yet expired
+    // otherwise generate a new token using the ff: id, username, email
+    const existingToken = await this.tokenRepository.findByUserId(
+      user.id,
+      TokenType.ONE_TIME_TOKEN
     );
-    const tokenExpiresAt = await this.jwtUtils.getTokenExpiry(token);
-    const newToken = Token.create({
-      userId: user.id,
-      token: token,
-      tokenType: TokenType.ONE_TIME_TOKEN,
-      expiresAt: new Date(tokenExpiresAt),
-    });
-    await this.tokenRepository.save(newToken);
+    let token;
+    if (existingToken) {
+      token = existingToken.token;
+    } else {
+      token = await this.jwtUtils.generateToken(
+        {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+        },
+        jwtConfig.forgotPasswordTokenExpiresIn
+      );
+      const tokenExpiresAt = await this.jwtUtils.getTokenExpiry(token);
+      const newToken = Token.create({
+        userId: user.id,
+        token: token,
+        tokenType: TokenType.ONE_TIME_TOKEN,
+        expiresAt: new Date(tokenExpiresAt),
+      });
+      await this.tokenRepository.save(newToken);
+    }
 
     return {
       user: { id: user.Id, username: user.username, email: user.email },
@@ -129,8 +139,38 @@ export default class AuthService {
     };
   }
 
-  async resetPassword(id, username, email, token) {
-    // TODO
+  async resetPassword(email, password, token) {
+    // Make sure token is valid
+    let decodedTokenExpiry;
+    try {
+      const decodedToken = await this.jwtUtils.verifyToken(token);
+      decodedTokenExpiry = decodedToken.exp * 1000;
+    } catch (err) {
+      throw new HttpError(
+        "Validation link is invalid, please request a new one",
+        400
+      );
+    }
+
+    // Make sure token is not yet expired
+    if (new Date(decodedTokenExpiry) < new Date())
+      throw new HttpError(
+        "Forgot password link is already expired, please request a new one",
+        400
+      );
+
+    // Check if email exist in the database
+    const user = await this.userRepository.findByUsernameOrEmail(null, email);
+    if (user === null) throw new HttpError("Email does not exist", 400);
+
+    //  Generate new password and update user
+    const newPassword = await Auth.hashPassword(password);
+    const isSuccessful = await this.userRepository.updatePassword(
+      user.id,
+      newPassword
+    );
+    if (!isSuccessful)
+      throw new Error("Unable to update password, please try again later!");
   }
 
   async verifyEmail(email, otp) {

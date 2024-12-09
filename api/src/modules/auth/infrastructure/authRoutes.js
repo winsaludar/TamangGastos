@@ -43,6 +43,13 @@ export default async function authRoutes(fastify, options) {
   fastify.post(
     "/reset-password",
     resetPasswordMetadata,
-    async (request, reply) => {}
+    async (request, reply) => {
+      const { email, password, token } = request.body;
+      await fastify.authService.resetPassword(email, password, token);
+      reply.send({
+        message: "Reset password successful",
+        status: 200,
+      });
+    }
   );
 }

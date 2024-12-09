@@ -56,6 +56,14 @@ export default class UserRepository {
     return id;
   }
 
+  async updatePassword(id, password) {
+    const updatedRows = await knexInstance(this.tableName)
+      .where({ id: id })
+      .update({ password_hash: password, updated_at: new Date() });
+
+    return updatedRows > 0;
+  }
+
   /**
    * Convert a database row to a domain entity.
    *
