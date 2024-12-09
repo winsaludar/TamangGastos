@@ -60,6 +60,9 @@ export default class AuthService {
     );
     if (!isValidPassword) throw new HttpError(errorMessage, 401);
 
+    // Make sure email is validated
+    if (!user.isActive) throw new HttpError("Email not yet validated.", 401);
+
     // Return existing token if not yet expired
     // otherwise create new one
     const existingToken = await this.tokenRepository.findByUserId(
