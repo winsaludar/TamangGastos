@@ -1,4 +1,5 @@
 import User from "../domain/user.js";
+import knex from "knex";
 import { knexInstance } from "../../../common/config/databaseConfig.js";
 
 export default class UserRepository {
@@ -56,10 +57,29 @@ export default class UserRepository {
     return result.id;
   }
 
+  /**
+   *
+   * @param {uuid} id The id of the user to be updated
+   * @param {string} password The new hashed password of the user
+   * @returns {Promise<bool>} True or false wether the user password is updated
+   */
   async updatePassword(id, password) {
     const updatedRows = await knexInstance(this.tableName)
       .where({ id: id })
       .update({ password_hash: password, updated_at: new Date() });
+
+    return updatedRows > 0;
+  }
+
+  /**
+   *
+   * @param {uuid} id The id of the user to be enabled
+   * @returns {Promise<bool>} True or false wether the user has been activated
+   */
+  async enableUser(id) {
+    const updatedRows = await knexInstance(this.tableName)
+      .where({ id: id })
+      .update({ is_active: true, updated_at: new Date() });
 
     return updatedRows > 0;
   }

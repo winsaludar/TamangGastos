@@ -2,6 +2,7 @@ import { forgotPasswordMetadata } from "./metadatas/forgotPasswordMetadata.js";
 import { loginMetadata } from "./metadatas/loginMetadata.js";
 import { registerMetadata } from "./metadatas/registerMetadata.js";
 import { resetPasswordMetadata } from "./metadatas/resetPasswordMetadata.js";
+import { validateEmailMetadata } from "./metadatas/validateEmailMetadata.js";
 
 export default async function authRoutes(fastify, options) {
   fastify.post("/register", registerMetadata, async (request, reply) => {
@@ -53,6 +54,19 @@ export default async function authRoutes(fastify, options) {
       await fastify.authService.resetPassword(email, password, token);
       reply.send({
         message: "Reset password successful",
+        status: 200,
+      });
+    }
+  );
+
+  fastify.post(
+    "/validate-email",
+    validateEmailMetadata,
+    async (request, reply) => {
+      const { email, token } = request.body;
+      await fastify.authService.verifyEmail(email, token);
+      reply.send({
+        message: "Your email has been cofirmed, you may now login",
         status: 200,
       });
     }

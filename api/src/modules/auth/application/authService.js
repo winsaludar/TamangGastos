@@ -147,18 +147,12 @@ export default class AuthService {
       const decodedToken = await this.jwtUtils.verifyToken(token);
       decodedTokenExpiry = decodedToken.exp * 1000;
     } catch (err) {
-      throw new HttpError(
-        "Validation link is invalid, please request a new one",
-        400
-      );
+      throw new HttpError("Link is invalid, please request a new one", 400);
     }
 
     // Make sure token is not yet expired
     if (new Date(decodedTokenExpiry) < new Date())
-      throw new HttpError(
-        "Forgot password link is already expired, please request a new one",
-        400
-      );
+      throw new HttpError("Link is expired, please request a new one", 400);
 
     // Check if email exist in the database
     const user = await this.userRepository.findByUsernameOrEmail(null, email);
@@ -174,18 +168,55 @@ export default class AuthService {
       throw new Error("Unable to update password, please try again later!");
   }
 
-  async verifyEmail(email, otp) {
-    // TODO
+  async verifyEmail(email, token) {
+    // Make sure token is valid
+    let decodedToken;
+    let decodedTokenExpiry;
+    try {
+      decodedToken = await this.jwtUtils.verifyToken(token);
+      decodedTokenExpiry = decodedToken.exp * 1000;
+    } catch (err) {
+      throw new HttpError("Link is invalid, please request a new one", 400);
+    }
+
+    // Make sure token is not yet expired
+    if (new Date(decodedTokenExpiry) < new Date())
+      throw new HttpError("Link is expired, please request a new one", 400);
+
+    // Make sure email is already registered
+    const user = await this.userRepository.findByUsernameOrEmail(null, email);
+    if (user === null) throw new HttpError("Email does not exist", 400);
+
+    // Make sure user is not yet verified
+    if (user.isActive) throw new HttpError("Email is already verified", 400);
+
+    // Double-check token validity from our database copy
+    const isTokenValid = await this.tokenRepository.isTokenValid(
+      user.id,
+      token,
+      TokenType.ONE_TIME_TOKEN
+    );
+    console.log(user.id, token, TokenType.ONE_TIME_TOKEN, isTokenValid);
+    if (!isTokenValid)
+      throw new HttpError(
+        "Link might be tampered, please request a new one",
+        400
+      );
+
+    // Enable user
+    const isSuccessful = await this.userRepository.enableUser(user.id);
+    if (!isSuccessful)
+      throw new Error("Unable to active user, please try again later!");
   }
 }
 
 /**
  *
- * @param {User} user - The user data use for generating token
- * @param {string} expiresIn - The expiry of the token that will be generated
- * @param {TokenType} tokenType - The type of token to generate
- * @param {JwtUtils} jwtUtils - Utility class for JWT related functionalities
- * @param {TokenRepository} tokenRepository - Repository class for Token entity
+ * @param {User} user The user data use for generating token
+ * @param {string} expiresIn The expiry of the token that will be generated
+ * @param {TokenType} tokenType The type of token to generate
+ * @param {JwtUtils} jwtUtils Utility class for JWT related functionalities
+ * @param {TokenRepository} tokenRepository Repository class for Token entity
  * @returns {Promise<string>} The generated token string
  */
 async function generateToken(

@@ -48,6 +48,7 @@ describe("Auth Service", () => {
       // Arrange
       hashedPassword = await Auth.hashPassword(password);
       const userId = 1;
+      mockJwtUtils.generateToken.resolves("fake-token");
       mockUserRepository.save.resolves(userId);
       mockAuthEmailService.sendEmailConfirmation.resolves({});
 

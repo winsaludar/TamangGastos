@@ -9,9 +9,9 @@ export default class TokenRepository {
   /**
    * Find user token using their id
    *
-   * @param {string} userId - The user_id of the token
-   * @param {string} tokenType - The token_type of the token
-   * @returns {Token} - The token domain entity or null if not found
+   * @param {string} userId The user_id of the token
+   * @param {TokenType} tokenType The token_type of the token
+   * @returns {Promise<Token>} The token domain entity or null if not found
    */
   async findByUserId(userId, tokenType) {
     const row = await knexInstance(this.tableName)
@@ -23,10 +23,27 @@ export default class TokenRepository {
   }
 
   /**
+   *
+   * @param {string} userId The user_id of the token
+   * @param {string} token The token string to be validated
+   * @param {TokenType} tokenType  The token type of the token to be validated
+   * @returns {Promise<bool>} True or false wether the token is valid
+   */
+  async isTokenValid(userId, token, tokenType) {
+    const result = await knexInstance(this.tableName)
+      .select(1)
+      .where({ user_id: userId, token: token, token_type: tokenType })
+      // .andWhere("expires_at", ">", new Date())
+      .first();
+
+    return !!result;
+  }
+
+  /**
    * Save a new user token to the database
    *
-   * @param {Token} token - The token domain entity to save
-   * @returns {Promise<number>} - The id of the saved token
+   * @param {Token} token The token domain entity to save
+   * @returns {Promise<number>} The id of the saved token
    */
   async save(token) {
     const [result] = await knexInstance(this.tableName)
@@ -46,8 +63,8 @@ export default class TokenRepository {
   /**
    * Convert a database row to a domain entity.
    *
-   * @param {Object} row - The database row object.
-   * @returns {Token} - The token domain entity.
+   * @param {Object} row The database row object.
+   * @returns {Token} The token domain entity.
    */
   toDomain(row) {
     return Token.create({
@@ -64,8 +81,8 @@ export default class TokenRepository {
   /**
    * Convert a domain entity to a database row format.
    *
-   * @param {Token} token - The token domain entity.
-   * @returns {Object} - The database row object.
+   * @param {Token} token The token domain entity.
+   * @returns {Object} The database row object.
    */
   toDatabase(token) {
     return {
