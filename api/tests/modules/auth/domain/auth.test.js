@@ -15,7 +15,7 @@ describe("Auth", () => {
       expect(hashPassword).to.be.not.undefined;
     });
 
-    it("should throw an error object when given an empty password", async () => {
+    it("should throw an Error object when given an empty password", async () => {
       try {
         await Auth.hashPassword("");
       } catch (error) {
@@ -40,7 +40,7 @@ describe("Auth", () => {
       expect(didMatch).to.be.false;
     });
 
-    it("should throw an error object when given an empty password", async () => {
+    it("should throw an Error object when given an empty password", async () => {
       try {
         await Auth.verifyPassword("", hashPassword);
       } catch (error) {
@@ -49,7 +49,7 @@ describe("Auth", () => {
       }
     });
 
-    it("should throw an error object when given an empty hash password", async () => {
+    it("should throw an Error object when given an empty hash password", async () => {
       try {
         await Auth.verifyPassword("Password1", "");
       } catch (error) {

@@ -14,6 +14,14 @@ export default class AuthService {
     this.authEmailService = authEmailService;
   }
 
+  /**
+   * Register user
+   *
+   * @param {string} username Unique username of the user
+   * @param {string} email Unique email of the user
+   * @param {string} password The password (in plain) of the user
+   * @returns {object} Newly created user with the id
+   */
   async registerUser(username, email, password) {
     // Make sure user does not exist yet
     const existingUser = await this.userRepository.findByUsernameOrEmail(
@@ -54,14 +62,21 @@ export default class AuthService {
     return { id: userId, username: user.username, email: user.email };
   }
 
+  /**
+   * Login user
+   *
+   * @param {string} email The email of the user
+   * @param {string} password The password of the user
+   * @returns {object} The user info along with the access token
+   */
   async loginUser(email, password) {
     const errorMessage = "Invalid email or password";
 
-    // Verify if user exist
+    // Make sure user exist
     const user = await this.userRepository.findByUsernameOrEmail(null, email);
     if (user === null) throw new HttpError(errorMessage, 401);
 
-    // Verify if password is correct
+    // Make sure password is correct
     const isValidPassword = await Auth.verifyPassword(
       password,
       user.passwordHash
@@ -106,21 +121,20 @@ export default class AuthService {
     };
   }
 
+  /**
+   * Request for a forgot password link
+   *
+   * @param {string} email The email of the user
+   * @returns {void}
+   */
   async forgotPassword(email) {
-    if (!email || email.trim() === "") {
-      throw new HttpError("Email cannot be empty", 400);
-    }
-
     // Check if email exist in the database
     const user = await this.userRepository.findByUsernameOrEmail(null, email);
     if (user === null) throw new HttpError("Email does not exist", 400);
 
     // Make sure user is activated first
     if (!user.isActive)
-      throw new HttpError(
-        "Email is not yet validated, please verify your email first",
-        400
-      );
+      throw new HttpError("Email is inactive, please verify it first", 400);
 
     // Return existing token if not yet expired
     // otherwise generate a new token using the ff: id, username, email
@@ -153,6 +167,14 @@ export default class AuthService {
     );
   }
 
+  /**
+   * Reset user password
+   *
+   * @param {string} email The email of the user
+   * @param {string} password The new password of the user
+   * @param {string} token The token string included from the forgot password link
+   * @returns {void}
+   */
   async resetPassword(email, password, token) {
     // Make sure token is valid
     let decodedTokenExpiry;
@@ -187,12 +209,22 @@ export default class AuthService {
       throw new Error("Unable to update password, please try again later!");
 
     // Expires token so it will never be used again
-    existingToken.setExpiresAt(new Date());
+    const dateMinusOneDay = new Date(
+      new Date().setDate(new Date().getDate() - 1)
+    );
+    existingToken.setExpiresAt(dateMinusOneDay);
     await this.tokenRepository.update(existingToken);
 
     // TODO: Remove existing login tokens
   }
 
+  /**
+   * Verify email
+   *
+   * @param {string} email The email of the user
+   * @param {string} token The token string included from the email confirmation link
+   * @returns {void}
+   */
   async verifyEmail(email, token) {
     // Make sure token is valid
     let decodedToken;
@@ -230,10 +262,17 @@ export default class AuthService {
       throw new Error("Unable to active user, please try again later!");
 
     // Expires token so it will never be used again
-    existingToken.setExpiresAt(new Date());
+    const dateMinusOneDay = new Date(
+      new Date().setDate(new Date().getDate() - 1)
+    );
     await this.tokenRepository.update(existingToken);
   }
 
+  /**
+   * Re-send the email confirmation link
+   *
+   * @param {*} email
+   */
   async resendEmailConfirmationLink(email) {
     // Make sure email is registered
     const user = await this.userRepository.findByUsernameOrEmail(null, email);

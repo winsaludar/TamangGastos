@@ -1,52 +1,70 @@
 import * as chai from "chai";
 
-import { default as chaiHttp, request } from "chai-http";
-
-import HttpError from "../../../../src/common/errors/httpError.js";
+import Fastify from "fastify";
+import ajvErrors from "ajv-errors";
 import authRoutes from "../../../../src/modules/auth/infrastructure/authRoutes.js";
-import { createApp } from "../../../../src/app.js";
+import { default as chaiHttp } from "chai-http";
+import errorHandler from "../../../../src/common/middlewares/errorHandler.js";
 import sinon from "sinon";
-import sinonChai from "sinon-chai";
 
 chai.use(chaiHttp);
-chai.use(sinonChai);
 const { expect } = chai;
 
 describe("Auth Routes", () => {
   const username = "test-username";
   const email = "test-email@example.com";
   const password = "123456";
+  const tokenString = "test-token";
 
-  let app;
+  let fastify;
   let mockAuthService;
 
   before(async () => {
-    // Mock services needed
-    const registerMockServices = (fastify) => {
-      const user = {
-        id: 1,
-        username,
-        email,
-      };
-      const token = "fake-token";
-      mockAuthService = {
-        registerUser: sinon.stub().resolves(user),
-        loginUser: sinon.stub().resolves({ user, token }),
-      };
-      fastify.decorate("authService", mockAuthService);
+    fastify = Fastify({
+      logger: false,
+      ajv: {
+        customOptions: {
+          allErrors: true,
+          $data: true,
+        },
+        plugins: [ajvErrors],
+      },
+    });
+
+    // Register custom error handler
+    fastify.setErrorHandler(errorHandler);
+
+    // Register a mock service
+    const user = {
+      id: 1,
+      username,
+      email,
     };
-    app = await createApp(registerMockServices);
-    app.listen();
+    const token = "fake-token";
+    mockAuthService = {
+      registerUser: sinon.stub().resolves(user),
+      loginUser: sinon.stub().resolves({ user, token }),
+      forgotPassword: sinon.stub().resolves(),
+      resetPassword: sinon.stub().resolves(),
+      verifyEmail: sinon.stub().resolves(),
+      resendEmailConfirmationLink: sinon.stub().resolves(),
+    };
+    fastify.decorate("authService", mockAuthService);
+
+    // Register the routes
+    fastify.register(authRoutes, { prefix: "/api/auth" });
+
+    await fastify.ready();
   });
 
   after(async () => {
-    await app.close();
+    await fastify.close();
   });
 
   describe("POST /register", () => {
     it("should register a new user successfully", async () => {
       // Arrange
-      const dto = {
+      const request = {
         username,
         email,
         password,
@@ -54,16 +72,18 @@ describe("Auth Routes", () => {
       };
 
       // Act
-      const response = await request
-        .execute(app.server)
-        .post("/api/auth/register")
-        .send(dto);
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/register",
+        payload: request,
+      });
 
       // Assert
       expect(response).to.have.status(200);
-      expect(response.body).to.have.property("message", "Register successful");
-      expect(response.body.data).to.have.property("user");
-      expect(response.body.data.user).to.include({
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message", "Register successful");
+      expect(responseData.data).to.have.property("user");
+      expect(responseData.data.user).to.include({
         username,
         email,
       });
@@ -71,72 +91,337 @@ describe("Auth Routes", () => {
 
     it("should return 400 for invalid request body", async () => {
       // Act
-      const response = await request
-        .execute(app.server)
-        .post("/api/auth/register")
-        .send({});
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/register",
+        payload: {},
+      });
 
       // Assert
       expect(response).to.have.status(400);
-      expect(response.body).to.have.property("message");
-      expect(response.body).to.have.property("details");
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
+      expect(responseData).to.have.property("details");
+    });
+
+    it("should return 500 for internal server error", async () => {
+      // Arrange
+      const request = {
+        username,
+        email,
+        password,
+        retypePassword: password,
+      };
+      mockAuthService.registerUser.rejects(new Error("Oops!"));
+
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/register",
+        payload: request,
+      });
+
+      // Assert
+      expect(response).to.have.status(500);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
     });
   });
 
   describe("POST /login", () => {
-    it("should login an existing user successfully", async () => {
+    it("should login user successfully", async () => {
+      // Arrange
+      const request = {
+        email,
+        password,
+      };
+
       // Act
-      const response = await request
-        .execute(app.server)
-        .post("/api/auth/login")
-        .send({
-          email,
-          password,
-        });
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        payload: request,
+      });
 
       // Assert
       expect(response).to.have.status(200);
-      expect(response.body).to.have.property("message", "Login successful");
-      expect(response.body.data).to.have.property("user");
-      expect(response.body.data.user).to.not.be.null.undefined;
-      expect(response.body.data).to.have.property("token");
-      expect(response.body.data.token).to.not.be.null.empty;
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message", "Login successful");
+      expect(responseData.data).to.have.property("token");
+      expect(responseData.data).to.have.property("user");
+      expect(responseData.data.user).to.include({ username, email });
     });
 
     it("should return 400 for invalid request body", async () => {
       // Act
-      const response = await request
-        .execute(app.server)
-        .post("/api/auth/login")
-        .send({});
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        payload: {},
+      });
 
       // Assert
       expect(response).to.have.status(400);
-      expect(response.body).to.have.property("message");
-      expect(response.body).to.have.property("details");
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
+      expect(responseData).to.have.property("details");
     });
 
-    it("should return 401 for invalid email or password", async () => {
+    it("should return 500 for internal server error", async () => {
       // Arrange
-      const errorMessage = "Invalid email or password";
-      mockAuthService.loginUser = sinon
-        .stub()
-        .throws(new HttpError(errorMessage, 401));
+      const request = {
+        email,
+        password,
+      };
+      mockAuthService.loginUser.rejects(new Error("Oops!"));
 
       // Act
-      const response = await request
-        .execute(app.server)
-        .post("/api/auth/login")
-        .send({
-          email: "non-existing-user@example.com",
-          password: "Password123",
-        });
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        payload: request,
+      });
 
       // Assert
-      expect(response).to.have.status(401);
-      expect(response.body)
-        .to.have.property("message")
-        .to.be.equals(errorMessage);
+      expect(response).to.have.status(500);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
+    });
+  });
+
+  describe("POST /forgot-password", () => {
+    it("should forgot password successfully", async () => {
+      // Arrange
+      const request = { email };
+
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/forgot-password",
+        payload: request,
+      });
+
+      // Assert
+      expect(response).to.have.status(200);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property(
+        "message",
+        "Forgot password successful"
+      );
+    });
+
+    it("should return 400 for invalid request body", async () => {
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/forgot-password",
+        payload: {},
+      });
+
+      // Assert
+      expect(response).to.have.status(400);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
+      expect(responseData).to.have.property("details");
+    });
+
+    it("should return 500 for internal server error", async () => {
+      // Arrange
+      const request = { email };
+      mockAuthService.forgotPassword.rejects(new Error("Oops!"));
+
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/forgot-password",
+        payload: request,
+      });
+
+      // Assert
+      expect(response).to.have.status(500);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
+    });
+  });
+
+  describe("POST /reset-password", () => {
+    it("should reset password successfully", async () => {
+      // Arrange
+      const request = {
+        email,
+        password,
+        retypePassword: password,
+        token: tokenString,
+      };
+
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/reset-password",
+        payload: request,
+      });
+
+      // Assert
+      expect(response).to.have.status(200);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property(
+        "message",
+        "Reset password successful"
+      );
+    });
+
+    it("should return 400 for invalid request body", async () => {
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/reset-password",
+        payload: {},
+      });
+
+      // Assert
+      expect(response).to.have.status(400);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
+      expect(responseData).to.have.property("details");
+    });
+
+    it("should return 500 for internal server error", async () => {
+      // Arrange
+      const request = {
+        email,
+        password,
+        retypePassword: password,
+        token: tokenString,
+      };
+      mockAuthService.resetPassword.rejects(new Error("Oops!"));
+
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/reset-password",
+        payload: request,
+      });
+
+      // Assert
+      expect(response).to.have.status(500);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
+    });
+  });
+
+  describe("POST /validate-email", () => {
+    it("should validate email successfully", async () => {
+      // Arrange
+      const request = {
+        email,
+        token: tokenString,
+      };
+
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/validate-email",
+        payload: request,
+      });
+
+      // Assert
+      expect(response).to.have.status(200);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property(
+        "message",
+        "Validate email successful"
+      );
+    });
+
+    it("should return 400 for invalid request body", async () => {
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/validate-email",
+        payload: {},
+      });
+
+      // Assert
+      expect(response).to.have.status(400);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
+      expect(responseData).to.have.property("details");
+    });
+
+    it("should return 500 for internal server error", async () => {
+      // Arrange
+      const request = {
+        email,
+        token: tokenString,
+      };
+      mockAuthService.verifyEmail.rejects(new Error("Oops!"));
+
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/validate-email",
+        payload: request,
+      });
+
+      // Assert
+      expect(response).to.have.status(500);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
+    });
+  });
+
+  describe("POST /resend-email-confirmation", () => {
+    it("should resend email confirmation successfully", async () => {
+      // Arrange
+      const request = { email };
+
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/resend-email-confirmation",
+        payload: request,
+      });
+
+      // Assert
+      expect(response).to.have.status(200);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property(
+        "message",
+        "Re-send email confirmation link successful"
+      );
+    });
+
+    it("should return 400 for invalid request body", async () => {
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/resend-email-confirmation",
+        payload: {},
+      });
+
+      // Assert
+      expect(response).to.have.status(400);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
+      expect(responseData).to.have.property("details");
+    });
+
+    it("should return 500 for internal server error", async () => {
+      // Arrange
+      const request = { email };
+      mockAuthService.resendEmailConfirmationLink.rejects(new Error("Oops!"));
+
+      // Act
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/api/auth/resend-email-confirmation",
+        payload: request,
+      });
+
+      // Assert
+      expect(response).to.have.status(500);
+      const responseData = JSON.parse(response.payload);
+      expect(responseData).to.have.property("message");
     });
   });
 });

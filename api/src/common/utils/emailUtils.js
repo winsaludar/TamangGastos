@@ -14,6 +14,13 @@ export default class EmailUtils {
     });
   }
 
+  /**
+   * Send and email to the user
+   *
+   * @param {string} toEmail Email of the recipient
+   * @param {string} subject Subject of the email
+   * @param {string} htmlContent Body of the email in HTML format
+   */
   async sendEmail(toEmail, subject, htmlContent) {
     const mailOptions = {
       from: emailConfig.fromEmail,
