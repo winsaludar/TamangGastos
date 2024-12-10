@@ -21,26 +21,27 @@ describe("Auth Routes", () => {
   let mockAuthService;
 
   before(async () => {
-    // Mock services needed
-    const registerMockServices = (fastify) => {
-      const user = {
-        id: 1,
-        username,
-        email,
-      };
-      const token = "fake-token";
-      mockAuthService = {
-        registerUser: sinon.stub().resolves(user),
-        loginUser: sinon.stub().resolves({ user, token }),
-      };
-      fastify.decorate("authService", mockAuthService);
+    app = await createApp();
+
+    // Register a mock service
+    const user = {
+      id: 1,
+      username,
+      email,
     };
-    app = await createApp(registerMockServices);
+    const token = "fake-token";
+    mockAuthService = {
+      registerUser: sinon.stub().resolves(user),
+      loginUser: sinon.stub().resolves({ user, token }),
+    };
+    delete app.authService; // Delete real implementation
+    app.decorate("authService", mockAuthService);
+
     app.listen();
   });
 
-  after(async () => {
-    await app.close();
+  after(() => {
+    app.close();
   });
 
   describe("POST /register", () => {

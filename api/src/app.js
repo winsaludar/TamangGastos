@@ -15,7 +15,7 @@ import { jwtConfig } from "./common/config/config.js";
 import { registerHooks } from "./common/middlewares/hooks.js";
 import { swaggerOptions } from "./common/config/swagger.js";
 
-export async function createApp(callback) {
+export async function createApp() {
   const fastify = Fastify({
     logger: true,
     ajv: {
@@ -44,12 +44,7 @@ export async function createApp(callback) {
   registerHooks(fastify);
 
   // Register services as fastify decoration.
-  // We use callback so we can inject mock services from unit tests
-  if (callback) {
-    callback(fastify);
-  } else {
-    registerServices(fastify);
-  }
+  registerServices(fastify);
 
   return fastify;
 }
