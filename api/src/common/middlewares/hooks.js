@@ -1,3 +1,8 @@
+/**
+ * Register custom hooks to fastify app
+ *
+ * @param {object} fastify The fastify application object
+ */
 export const registerHooks = (fastify) => {
   fastify.addHook("onRequest", async (request, reply) => {
     try {
