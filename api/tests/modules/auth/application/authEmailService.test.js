@@ -30,7 +30,7 @@ describe("Auth Email Service", () => {
       await authEmailService.sendEmailConfirmation(email, token, name);
 
       // Assert
-      expect(mockEmailUtils.sendEmail.calledOnce).to.be.true;
+      expect(mockEmailUtils.sendEmail).to.have.been.calledOnce;
     });
   });
 
@@ -43,7 +43,7 @@ describe("Auth Email Service", () => {
       await authEmailService.sendForgotPasswordUrl(email, token, name);
 
       // Assert
-      expect(mockEmailUtils.sendEmail.calledOnce).to.be.true;
+      expect(mockEmailUtils.sendEmail).to.have.been.calledOnce;
     });
   });
 });

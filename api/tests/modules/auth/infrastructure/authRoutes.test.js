@@ -3,7 +3,6 @@ import * as chai from "chai";
 import { default as chaiHttp, request } from "chai-http";
 
 import HttpError from "../../../../src/common/errors/httpError.js";
-import authRoutes from "../../../../src/modules/auth/infrastructure/authRoutes.js";
 import { createApp } from "../../../../src/app.js";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
