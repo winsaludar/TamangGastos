@@ -1,3 +1,5 @@
+import { corsConfig, jwtConfig } from "./common/config/config.js";
+
 import AuthEmailService from "./modules/auth/application/authEmailService.js";
 import AuthService from "./modules/auth/application/authService.js";
 import EmailUtils from "./common/utils/emailUtils.js";
@@ -7,11 +9,11 @@ import TokenRepository from "./modules/token/infrastructure/tokenRepository.js";
 import UserRepository from "./modules/user/infrastructure/userRepository.js";
 import ajvErrors from "ajv-errors";
 import authRoutes from "./modules/auth/infrastructure/authRoutes.js";
+import cors from "@fastify/cors";
 import errorHandler from "./common/middlewares/errorHandler.js";
 import fastifyJwt from "@fastify/jwt";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
-import { jwtConfig } from "./common/config/config.js";
 import { registerHooks } from "./common/middlewares/hooks.js";
 import { swaggerOptions } from "./common/config/swagger.js";
 
@@ -29,6 +31,15 @@ export async function createApp() {
 
   // Register custom error handler (must be at the top)
   fastify.setErrorHandler(errorHandler);
+
+  // Enable cors
+  fastify.register(cors, {
+    origin: corsConfig.allowedOrigins.split(","),
+    methods: corsConfig.allowedMethods.split(","),
+    allowedHeaders: corsConfig.allowedHeaders.split(","),
+    credentials: corsConfig.credentials,
+    maxAge: corsConfig.maxAge,
+  });
 
   // Register JWT plugin
   await fastify.register(fastifyJwt, { secret: jwtConfig.secret });

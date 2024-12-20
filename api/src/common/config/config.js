@@ -8,6 +8,14 @@ export const appConfig = {
   forgotPasswordUrl: process.env.APP_FORGOT_PASSWORD_URL,
 };
 
+export const corsConfig = {
+  allowedOrigins: process.env.CORS_ALLOWED_ORIGINS,
+  allowedMethods: process.env.CORS_ALLOWED_METHODS,
+  allowedHeaders: process.env.CORS_ALLOWED_HEADERS,
+  allowCredentials: process.env.CORS_ALLOW_CREDENTIALS,
+  maxAge: process.env.CORS_MAX_AGE,
+};
+
 export const jwtConfig = {
   secret: process.env.JWT_SECRET,
   accessTokenExpiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRY,
