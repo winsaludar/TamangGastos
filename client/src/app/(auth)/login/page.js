@@ -1,13 +1,54 @@
+"use client";
+
 import Link from "next/link";
+import { login } from "../../../utils/auth.js";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleLogin = async function (e) {
+    e.preventDefault();
+    setError("");
+
+    const response = await login(email, password);
+    if (!response.isSuccessful) {
+      setError(response.error);
+      return;
+    }
+
+    // Redirect to homepage
+    router.push("/");
+  };
+
   return (
     <>
+      <section
+        className={`relative w-full text-center text-red-700 px-4 py-3 rounded relative mb-16 ${
+          error ? "bg-red-100 border border-red-400" : ""
+        }`}
+        role="alert"
+      >
+        {error && (
+          <>
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{` ${error}`}</span>
+          </>
+        )}
+      </section>
+
       <h1 className="text-2xl xl:text-3xl font-extrabold">Login</h1>
 
       <div className="w-full flex-1 mt-8">
         <section className="flex flex-col items-center">
-          <button className="w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-orange-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline">
+          <button
+            className="opacity-50 cursor-not-allowed w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-orange-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline"
+            disabled
+          >
             <div className="bg-white p-2 rounded-full">
               <svg className="w-4" viewBox="0 0 533.5 544.3">
                 <path
@@ -31,7 +72,10 @@ export default function LoginPage() {
             <span className="ml-4">Login with Google</span>
           </button>
 
-          <button className="w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-orange-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline mt-5">
+          <button
+            className="opacity-50 cursor-not-allowed w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-orange-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline mt-5"
+            disabled
+          >
             <div className="bg-white p-1 rounded-full">
               <svg className="w-6" viewBox="0 0 32 32">
                 <path
@@ -51,20 +95,27 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <form className="mx-auto max-w-xs">
+      <form className="mx-auto max-w-xs" onSubmit={handleLogin}>
         <input
-          className="w-full px-8 py-4 -lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
+          className="w-full px-8 py-4 -lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
           type="email"
           placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
         <input
-          className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
+          className="w-full px-8 py-4 rounded-lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
           type="password"
           placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button className="mt-5 tracking-wide font-semibold bg-orange-500 text-gray-100 w-full py-4 rounded-lg hover:bg-orange-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
+        <button
+          className="mt-5 tracking-wide font-semibold bg-orange-500 text-gray-100 w-full py-4 rounded-lg hover:bg-orange-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none"
+          type="submit"
+        >
           <svg
             className="w-6 h-6 -ml-2"
             fill="#FFF"

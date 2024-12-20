@@ -1,15 +1,35 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 export default function LoginPage() {
-  const pageTitle = "Register | Tamang Gastos";
+  const [error, setError] = useState("");
 
   return (
     <>
+      <section
+        className={`relative w-full text-center text-red-700 px-4 py-3 rounded relative mb-16 ${
+          error ? "bg-red-100 border border-red-400" : ""
+        }`}
+        role="alert"
+      >
+        {error && (
+          <>
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{` ${error}`}</span>
+          </>
+        )}
+      </section>
+
       <h1 className="text-2xl xl:text-3xl font-extrabold">Sign up</h1>
 
       <div className="w-full flex-1 mt-8">
         <section className="flex flex-col items-center">
-          <button className="w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-orange-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline">
+          <button
+            className="opacity-50 cursor-not-allowed w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-orange-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline"
+            disabled
+          >
             <div className="bg-white p-2 rounded-full">
               <svg className="w-4" viewBox="0 0 533.5 544.3">
                 <path
@@ -33,7 +53,10 @@ export default function LoginPage() {
             <span className="ml-4">Sign up with Google</span>
           </button>
 
-          <button className="w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-orange-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline mt-5">
+          <button
+            className="opacity-50 cursor-not-allowed w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-orange-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline mt-5"
+            disabled
+          >
             <div className="bg-white p-1 rounded-full">
               <svg className="w-6" viewBox="0 0 32 32">
                 <path
@@ -55,19 +78,25 @@ export default function LoginPage() {
 
       <form className="mx-auto max-w-xs">
         <input
-          className="w-full px-8 py-4 -lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
+          className="w-full px-8 py-4 -lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
+          type="text"
+          placeholder="Username"
+          required
+        />
+        <input
+          className="w-full px-8 py-4 -lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
           type="email"
           placeholder="Email"
           required
         />
         <input
-          className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
+          className="w-full px-8 py-4 rounded-lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
           type="password"
           placeholder="Password"
           required
         />
         <input
-          className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
+          className="w-full px-8 py-4 rounded-lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
           type="password"
           placeholder="Repeat Password"
           required
