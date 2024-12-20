@@ -26,6 +26,33 @@ export async function login(email, password) {
 
     return { isSuccessful: true, token: data.token, error: null };
   } catch (err) {
-    return { isSuccessful: false, error: err.message, token: null };
+    return { isSuccessful: false, token: null, error: err.message };
+  }
+}
+
+export async function register(username, email, password, retypePassword) {
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: username,
+        email: email,
+        password: password,
+        retypePassword: retypePassword,
+      }),
+    });
+
+    console.log("register util: ", response);
+    if (!response.ok) {
+      const { message } = await response.json();
+      throw new Error(message);
+    }
+
+    const { message } = await response.json();
+
+    return { isSuccessful: true, message };
+  } catch (err) {
+    return { isSuccessful: false, message: err.message };
   }
 }

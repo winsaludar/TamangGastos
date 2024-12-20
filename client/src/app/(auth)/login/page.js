@@ -16,6 +16,7 @@ export default function LoginPage() {
     setError("");
 
     const response = await login(email, password);
+
     if (!response.isSuccessful) {
       setError(response.error);
       return;

@@ -1,23 +1,60 @@
 "use client";
 
 import Link from "next/link";
+import { register } from "../../../utils/auth.js";
 import { useState } from "react";
 
 export default function LoginPage() {
-  const [error, setError] = useState("");
+  const emptyFormData = {
+    username: "",
+    email: "",
+    password: "",
+    retypePassword: "",
+  };
+  const [formData, setFormData] = useState(emptyFormData);
+  const [registerResponse, setRegisterResponse] = useState(null);
+
+  const handleRegister = async function (e) {
+    e.preventDefault();
+    setRegisterResponse(null);
+
+    const response = await register(
+      formData.username,
+      formData.email,
+      formData.password,
+      formData.retypePassword
+    );
+
+    if (response.isSuccessful) {
+      setRegisterResponse({
+        ...response,
+        message:
+          "Registered successful, please check your email inbox/spam folder for the validation link",
+      });
+      setFormData(emptyFormData);
+    } else {
+      setRegisterResponse({ ...response });
+    }
+  };
 
   return (
     <>
       <section
-        className={`relative w-full text-center text-red-700 px-4 py-3 rounded relative mb-16 ${
-          error ? "bg-red-100 border border-red-400" : ""
+        className={`relative w-full text-center px-4 py-3 rounded relative mb-16 ${
+          registerResponse
+            ? registerResponse.isSuccessful
+              ? "bg-green-100 border border-green-400 text-green-700"
+              : "bg-red-100 border border-red-400 text-red-700"
+            : ""
         }`}
         role="alert"
       >
-        {error && (
+        {registerResponse && (
           <>
-            <strong className="font-bold">Error: </strong>
-            <span className="block sm:inline">{` ${error}`}</span>
+            <strong className="font-bold">
+              {!registerResponse.isSuccessful ? "Error: " : ""}{" "}
+            </strong>
+            <span className="block sm:inline">{registerResponse.message}</span>
           </>
         )}
       </section>
@@ -76,32 +113,49 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <form className="mx-auto max-w-xs">
+      <form className="mx-auto max-w-xs" onSubmit={handleRegister}>
         <input
           className="w-full px-8 py-4 -lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
           type="text"
           placeholder="Username"
+          value={formData.username}
+          onChange={(e) =>
+            setFormData({ ...formData, username: e.target.value })
+          }
           required
         />
         <input
           className="w-full px-8 py-4 -lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
           type="email"
           placeholder="Email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required
         />
         <input
           className="w-full px-8 py-4 rounded-lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
           type="password"
           placeholder="Password"
+          value={formData.password}
+          onChange={(e) =>
+            setFormData({ ...formData, password: e.target.value })
+          }
           required
         />
         <input
           className="w-full px-8 py-4 rounded-lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
           type="password"
           placeholder="Repeat Password"
+          value={formData.retypePassword}
+          onChange={(e) =>
+            setFormData({ ...formData, retypePassword: e.target.value })
+          }
           required
         />
-        <button className="mt-5 tracking-wide font-semibold bg-orange-500 text-gray-100 w-full py-4 rounded-lg hover:bg-orange-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
+        <button
+          className="mt-5 tracking-wide font-semibold bg-orange-500 text-gray-100 w-full py-4 rounded-lg hover:bg-orange-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none"
+          type="submit"
+        >
           <svg
             className="w-6 h-6 -ml-2"
             fill="none"
