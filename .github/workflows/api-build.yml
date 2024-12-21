@@ -30,15 +30,16 @@ jobs:
           cache-dependency-path: "./api/package-lock.json"
 
       # Install dependencies
-      - name: Install Dependencies (Client)
+      - name: Install Dependencies
         run: npm ci
         working-directory: ./api
 
       # Build the APIs
-      - name: Build Client
+      - name: Build APIs
         run: npm run build --if-present
         working-directory: ./api
 
       # Run unit tests
-      - run: npm run test
+      - name: Run Unit Tests
+        run: npm run test
         working-directory: ./api
