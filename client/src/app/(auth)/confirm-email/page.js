@@ -19,7 +19,7 @@ export default async function ConfirmEmailPage({ searchParams }) {
     headerText = "Invalid validation link!";
     subText = "Please request a new validation link.";
     colorClass = "red";
-    buttonName = "Re-send Email Confirmation";
+    buttonName = "Request Email Confirmation Link";
   } else {
     headerText = "Email Confirmed!";
     subText = "You can now use your email address to login.";

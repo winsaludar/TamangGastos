@@ -183,11 +183,14 @@ export default function RegisterPage() {
         </p>
       </form>
 
-      <div className="my-12 border-b text-center">
-        <p className="mt-6 text-xs text-gray-600 text-center">
-          <Link href="/login">
-            Already have an account? Go back to our login page
-          </Link>{" "}
+      <div className="my-12 text-sm text-center">
+        <p className="text-gray-600">
+          <Link
+            href="/login"
+            className="inline-block px-4 py-2 form-semibold hover:text-orange-500 transition-all duration-300 ease-in-out focus:shadow-outline focus:outline-none"
+          >
+            Already have an account? Login here
+          </Link>
         </p>
       </div>
     </>

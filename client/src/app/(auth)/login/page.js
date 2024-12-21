@@ -146,11 +146,30 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <div className="my-12 border-b text-center">
-        <p className="mt-6 text-xs text-gray-600 text-center">
-          <Link href="/register">
-            Don&apos;t have an account yet? Go to our register page
-          </Link>{" "}
+      <div className="my-12 text-sm text-center">
+        <p className="text-gray-600">
+          <Link
+            href="/register"
+            className="inline-block px-4 py-2 form-semibold hover:text-orange-500 transition-all duration-300 ease-in-out focus:shadow-outline focus:outline-none"
+          >
+            No account yet? Register now
+          </Link>
+        </p>
+        <p className="text-gray-600">
+          <Link
+            href="/forgot-password"
+            className="inline-block px-4 py-2 form-semibold hover:text-orange-500 transition-all duration-300 ease-in-out focus:shadow-outline focus:outline-none"
+          >
+            Forgot your password?
+          </Link>
+        </p>
+        <p className="text-gray-600">
+          <Link
+            href="/resend-email-confirmation"
+            className="inline-block px-4 py-2 form-semibold hover:text-orange-500 transition-all duration-300 ease-in-out focus:shadow-outline focus:outline-none"
+          >
+            Didn&apos;t receive confirmation email? Request a new one
+          </Link>
         </p>
       </div>
     </>
