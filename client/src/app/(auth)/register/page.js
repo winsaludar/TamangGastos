@@ -4,7 +4,7 @@ import Link from "next/link";
 import { register } from "../../../utils/auth.js";
 import { useState } from "react";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const emptyFormData = {
     username: "",
     email: "",
@@ -29,7 +29,7 @@ export default function LoginPage() {
       setRegisterResponse({
         ...response,
         message:
-          "Registered successful, please check your email inbox/spam folder for the validation link",
+          "Registered successful! Please check your email inbox/spam folder for the validation link",
       });
       setFormData(emptyFormData);
     } else {

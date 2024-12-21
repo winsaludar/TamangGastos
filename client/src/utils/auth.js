@@ -43,15 +43,33 @@ export async function register(username, email, password, retypePassword) {
       }),
     });
 
-    console.log("register util: ", response);
     if (!response.ok) {
-      const { message } = await response.json();
-      throw new Error(message);
+      const { details } = await response.json();
+      throw new Error(details.join(", "));
     }
 
     const { message } = await response.json();
 
     return { isSuccessful: true, message };
+  } catch (err) {
+    return { isSuccessful: false, message: err.message };
+  }
+}
+
+export async function validateEmail(email, token) {
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/validate-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email, token: token }),
+    });
+    const body = await response.json();
+
+    if (!response.ok) {
+      throw new Error(body.message);
+    }
+
+    return { isSuccessful: true, message: body.message };
   } catch (err) {
     return { isSuccessful: false, message: err.message };
   }
