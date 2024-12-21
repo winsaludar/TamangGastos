@@ -1,0 +1,36 @@
+name: Deploy Client to Vercel
+
+on:
+  workflow_run:
+    workflows:
+      - "Build Client App"
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # Install Vercel CLI
+    - name: Install Vercel CLI
+      run: npm install -g vercel
+
+    # Authenticate with Vercel (using GitHub secrets for secure deployment)
+    - name: Vercel Authentication
+      run: vercel login ${{ secrets.VERCEL_TOKEN }} --token
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+    # Deploy to Vercel
+    - name: Deploy to Vercel
+      run: |
+        vercel --prod --confirm --token ${{ secrets.VERCEL_TOKEN }}
+      working-directory: ./client
