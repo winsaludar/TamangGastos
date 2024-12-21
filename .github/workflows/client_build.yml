@@ -21,11 +21,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    # Set up Node.js
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
+
+    # Install dependencies in the 'client' directory (or 'API' depending on your structure)
+    - name: Install Dependencies (Client)
+      run: npm ci
+      working-directory: ./client 
+
+    # Build the client app (or API) in the 'client' directory
+    - name: Build Client
+      run: npm run build --if-present
+      working-directory: ./client
+
+    # Optionally, run tests (if applicable) in the 'client' directory
     # - run: npm test
+    #   working-directory: ./client
