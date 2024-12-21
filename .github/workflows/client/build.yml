@@ -2,9 +2,10 @@ name: Build App
 
 on:
   push:
-    branches:
-      - main
-
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+    
 jobs:
   deploy:
     runs-on: ubuntu-latest
