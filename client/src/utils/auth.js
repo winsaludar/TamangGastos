@@ -98,3 +98,45 @@ export async function resendEmailConfirmation(email) {
     return { isSuccessful: false, message: err.message };
   }
 }
+
+export async function forgotPassword(email) {
+  try {
+    const endpoint = `${BASE_URL}/${process.env.NEXT_PUBLIC_API_FORGOT_PASSWORD}`;
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const body = await response.json();
+
+    if (!response.ok) {
+      throw new Error(body.message);
+    }
+
+    return { isSuccessful: true, message: body.message };
+  } catch (err) {
+    return { isSuccessful: false, message: err.message };
+  }
+}
+
+export async function resetPassword(email, token, password, retypePassword) {
+  try {
+    console.log(email, token, password, retypePassword);
+    const endpoint = `${BASE_URL}/${process.env.NEXT_PUBLIC_API_RESET_PASSWORD}`;
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, token, password, retypePassword }),
+    });
+    const body = await response.json();
+
+    if (!response.ok) {
+      const message = body.details ? body.details.join(", ") : body.message;
+      throw new Error(message);
+    }
+
+    return { isSuccessful: true, message: body.message };
+  } catch (err) {
+    return { isSuccessful: false, message: err.message };
+  }
+}

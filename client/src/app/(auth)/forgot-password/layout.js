@@ -1,8 +1,8 @@
 export const metadata = {
-  title: "Register Page - Tamang Gastos",
+  title: "Forgot Password - Tamang Gastos",
 };
 
-export default function RegisterLayout({ children }) {
+export default function ForgotPasswordLayout({ children }) {
   return (
     <>
       <article className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
@@ -15,7 +15,7 @@ export default function RegisterLayout({ children }) {
         <div
           className="w-full bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: "url('/register-placeholder.jpg')",
+            backgroundImage: "url('/forgot-placeholder.jpg')",
           }}
         ></div>
       </aside>

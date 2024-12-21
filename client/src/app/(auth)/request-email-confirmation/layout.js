@@ -1,6 +1,5 @@
 export const metadata = {
   title: "Request Email Confirmation Link - Tamang Gastos",
-  backgroundImage: "/register-placeholder.jpg",
 };
 
 export default function RequestEmailConfirmationLayout({ children }) {

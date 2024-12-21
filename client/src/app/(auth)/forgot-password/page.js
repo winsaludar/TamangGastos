@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { resendEmailConfirmation } from "@/utils/auth.js";
+import { forgotPassword } from "@/utils/auth.js";
 import { useState } from "react";
 
-export default function RequestEmailConfirmationPage() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [response, setResponse] = useState(null);
 
@@ -12,12 +12,18 @@ export default function RequestEmailConfirmationPage() {
     e.preventDefault();
     setResponse(null);
 
-    const res = await resendEmailConfirmation(email);
-    setResponse({ ...res });
+    const res = await forgotPassword(email);
 
-    if (res.isSuccessful) {
-      setEmail("");
+    if (!res.isSuccessful) {
+      setResponse({ ...res });
+      return;
     }
+
+    setResponse({
+      ...res,
+      message: "An email has been sent! Please check your inbox/spam folder",
+    });
+    setEmail("");
   };
 
   return (
@@ -43,7 +49,7 @@ export default function RequestEmailConfirmationPage() {
       </section>
 
       <h1 className="text-2xl xl:text-3xl font-extrabold text-center">
-        Request for a new email confirmation link
+        Forgot your password
       </h1>
 
       <form className="w-full mx-auto mt-12" onSubmit={handleSend}>
@@ -77,7 +83,7 @@ export default function RequestEmailConfirmationPage() {
             href="/login"
             className="inline-block px-4 py-2 form-semibold hover:text-orange-500 transition-all duration-300 ease-in-out focus:shadow-outline focus:outline-none"
           >
-            Already verified? Login here
+            Done changing your password? Login here
           </Link>
         </p>
       </div>
