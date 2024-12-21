@@ -2,6 +2,11 @@ name: Deploy Client to Vercel
 
 on:
   workflow_dispatch: # Allows manual trigger
+  workflow_run:
+    workflows:
+      - Build Client App
+    types:
+      - completed
 
 jobs:
   deploy:
@@ -13,14 +18,6 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      # Step 1: Trigger the client build workflow manually (use the existing client-build.yml)
-      - name: Trigger client build workflow
-        uses: peter-evans/workflow-dispatch@v1
-        with:
-          repository: ${{ github.repository }} # Current repository
-          workflow: client-build.yml # The name of the build workflow
-          ref: ${{ github.ref }} # Use the current branch for the build
-
       - uses: actions/checkout@v4
 
       # Install Vercel CLI
