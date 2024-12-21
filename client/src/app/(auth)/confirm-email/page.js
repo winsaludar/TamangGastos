@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { validateEmail } from "../../../utils/auth.js";
+import { validateEmail } from "@/utils/auth.js";
 
 export default async function ConfirmEmailPage({ searchParams }) {
   const contactUs = process.env.NEXT_PUBLIC_CONTACT_US;
@@ -9,6 +9,7 @@ export default async function ConfirmEmailPage({ searchParams }) {
   let subText;
   let colorClass;
   let buttonName;
+  let buttonLink;
 
   // Validate in our backend
   const response = await validateEmail(email, token);
@@ -20,11 +21,13 @@ export default async function ConfirmEmailPage({ searchParams }) {
     subText = "Please request a new validation link.";
     colorClass = "red";
     buttonName = "Request Email Confirmation Link";
+    buttonLink = "/request-email-confirmation";
   } else {
     headerText = "Email Confirmed!";
     subText = "You can now use your email address to login.";
     colorClass = "green";
     buttonName = "Return to Login";
+    buttonLink = "/login";
   }
 
   return (
@@ -70,7 +73,7 @@ export default async function ConfirmEmailPage({ searchParams }) {
 
         <div className="mt-12">
           <Link
-            href="/login"
+            href={buttonLink}
             className={`inline-block px-8 py-4 text-lg font-semibold text-white transition-colors duration-200 bg-${colorClass}-600 rounded-lg hover:bg-${colorClass}-700`}
           >
             {buttonName}

@@ -1,10 +1,12 @@
 import { setCookie } from "nookies";
+import { stringify } from "postcss";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function login(email, password) {
   try {
-    const response = await fetch(`${BASE_URL}/api/auth/login`, {
+    const endpoint = `${BASE_URL}/${process.env.NEXT_PUBLIC_API_LOGIN}`;
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -32,7 +34,8 @@ export async function login(email, password) {
 
 export async function register(username, email, password, retypePassword) {
   try {
-    const response = await fetch(`${BASE_URL}/api/auth/register`, {
+    const endpoint = `${BASE_URL}/${process.env.NEXT_PUBLIC_API_REGISTER}`;
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -58,10 +61,31 @@ export async function register(username, email, password, retypePassword) {
 
 export async function validateEmail(email, token) {
   try {
-    const response = await fetch(`${BASE_URL}/api/auth/validate-email`, {
+    const endpoint = `${BASE_URL}/${process.env.NEXT_PUBLIC_API_VALIDATE_EMAIL}`;
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: email, token: token }),
+    });
+    const body = await response.json();
+
+    if (!response.ok) {
+      throw new Error(body.message);
+    }
+
+    return { isSuccessful: true, message: body.message };
+  } catch (err) {
+    return { isSuccessful: false, message: err.message };
+  }
+}
+
+export async function resendEmailConfirmation(email) {
+  try {
+    const endpoint = `${BASE_URL}/${process.env.NEXT_PUBLIC_API_RESEND_EMAIL_CONFIRMATION}`;
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
     });
     const body = await response.json();
 

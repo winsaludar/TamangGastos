@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { register } from "../../../utils/auth.js";
+import { register } from "@/utils/auth.js";
 import { useState } from "react";
 
 export default function RegisterPage() {

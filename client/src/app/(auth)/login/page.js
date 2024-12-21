@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { login } from "../../../utils/auth.js";
+import { login } from "@/utils/auth.js";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -165,7 +165,7 @@ export default function LoginPage() {
         </p>
         <p className="text-gray-600">
           <Link
-            href="/resend-email-confirmation"
+            href="/request-email-confirmation"
             className="inline-block px-4 py-2 form-semibold hover:text-orange-500 transition-all duration-300 ease-in-out focus:shadow-outline focus:outline-none"
           >
             Didn&apos;t receive confirmation email? Request a new one
