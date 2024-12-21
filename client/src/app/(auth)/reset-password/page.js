@@ -1,15 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { resetPassword } from "@/utils/auth.js";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
+  const email = searchParams.get("email");
+  const token = searchParams.get("token");
+
+  if (!email || !token) {
+    redirect("/login");
+  }
+
   const defaultData = {
-    email: searchParams.get("email"),
-    token: searchParams.get("token"),
+    email,
+    token,
     password: "",
     retypePassword: "",
   };
@@ -88,7 +96,7 @@ export default function ResetPasswordPage() {
         <input
           className="w-full px-8 py-4 -lg font-medium border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
           type="Password"
-          placeholder="Re-type Password"
+          placeholder="Repeat Password"
           value={formData.retypePassword}
           onChange={(e) =>
             setFormData({ ...formData, retypePassword: e.target.value })
