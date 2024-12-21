@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node ./src/server.js",
     "dev": "nodemon ./src/server.js",
-    "test": "npx mocha --require @babel/register ./tests/**/*"
+    "test": "mocha --require @babel/register ./tests/**/*"
   },
   "private": true,
   "author": "Erwin Saludar",
