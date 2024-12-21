@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <Suspense>
+    <Suspense fallback={<div>Error!</div>}>
       <section
         className={`relative w-full text-center px-4 py-3 rounded relative mb-16 ${
           response
