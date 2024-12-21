@@ -9,6 +9,12 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      example_input:
+        description: 'Input for testing'
+        required: false
+        default: 'default_value'
 
 jobs:
   build:
