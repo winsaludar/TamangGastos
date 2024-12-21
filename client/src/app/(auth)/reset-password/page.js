@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { resetPassword } from "@/utils/auth.js";
 import { useSearchParams } from "next/navigation";
@@ -49,7 +50,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <>
+    <Suspense>
       <section
         className={`relative w-full text-center px-4 py-3 rounded relative mb-16 ${
           response
@@ -129,6 +130,6 @@ export default function ResetPasswordPage() {
           </Link>
         </p>
       </div>
-    </>
+    </Suspense>
   );
 }
